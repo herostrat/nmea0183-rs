@@ -202,6 +202,76 @@ pub fn parse_rmc(sentence: NmeaSentence<'_>) -> Result<RmcData, Error<'_>> {
     }
 }
 
+impl RmcStatusOfFix {
+    fn to_nmea_char(self) -> char {
+        match self {
+            RmcStatusOfFix::Autonomous => 'A',
+            RmcStatusOfFix::Differential => 'D',
+            RmcStatusOfFix::Invalid => 'V',
+        }
+    }
+}
+
+impl RmcNavigationStatus {
+    fn to_nmea_char(self) -> char {
+        match self {
+            RmcNavigationStatus::Autonomous => 'A',
+            RmcNavigationStatus::Differential => 'D',
+            RmcNavigationStatus::Estimated => 'E',
+            RmcNavigationStatus::Manual => 'M',
+            RmcNavigationStatus::NotValid => 'N',
+            RmcNavigationStatus::Simulator => 'S',
+            RmcNavigationStatus::Valid => 'V',
+        }
+    }
+}
+
+impl crate::generate::GenerateNmeaBody for RmcData {
+    fn sentence_type(&self) -> SentenceType {
+        SentenceType::RMC
+    }
+
+    fn write_body(&self, f: &mut dyn core::fmt::Write) -> core::fmt::Result {
+        use crate::sentences::gen_utils::*;
+
+        // 1: fix_time
+        write_hms(f, &self.fix_time)?;
+        f.write_str(",")?;
+        // 2: status of fix
+        write!(f, "{}", self.status_of_fix.to_nmea_char())?;
+        f.write_str(",")?;
+        // 3-6: lat,N/S,lon,E/W
+        write_lat_lon(f, &self.lat, &self.lon)?;
+        f.write_str(",")?;
+        // 7: speed over ground
+        write_field(f, &self.speed_over_ground)?;
+        // 8: true course
+        write_field(f, &self.true_course)?;
+        // 9: date
+        write_date(f, &self.fix_date)?;
+        f.write_str(",")?;
+        // 10-11: magnetic variation with E/W direction
+        match self.magnetic_variation {
+            Some(v) => {
+                let dir = if v >= 0.0 { 'E' } else { 'W' };
+                write!(f, "{},{}", v.abs(), dir)?;
+            }
+            None => {
+                f.write_str(",")?;
+            }
+        }
+        // 12: FAA mode (NMEA 2.3+)
+        if let Some(mode) = self.faa_mode {
+            write!(f, ",{}", mode.to_nmea_char())?;
+        }
+        // 13: nav status (NMEA 4.1+)
+        if let Some(ns) = self.nav_status {
+            write!(f, ",{}", ns.to_nmea_char())?;
+        }
+        Ok(())
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use approx::assert_relative_eq;
@@ -386,5 +456,89 @@ mod tests {
         assert_relative_eq!(magnetic_variation.unwrap(), 0.0);
         assert_eq!(faa_mode, Some(FaaMode::Manual));
         assert_eq!(nav_status, Some(RmcNavigationStatus::Estimated));
+    }
+
+    #[test]
+    fn test_generate_rmc_roundtrip() {
+        let original = RmcData {
+            fix_time: Some(NaiveTime::from_hms_milli_opt(22, 54, 46, 330).unwrap()),
+            fix_date: Some(NaiveDate::from_ymd_opt(1994, 11, 19).unwrap()),
+            status_of_fix: RmcStatusOfFix::Autonomous,
+            lat: Some(49.0 + 16.45 / 60.),
+            lon: Some(-(123.0 + 11.12 / 60.)),
+            speed_over_ground: Some(0.5),
+            true_course: Some(54.7),
+            magnetic_variation: Some(20.3),
+            faa_mode: Some(FaaMode::Autonomous),
+            nav_status: None,
+        };
+        let mut buf = heapless::String::<256>::new();
+        crate::generate::generate_sentence("GP", &original, &mut buf).unwrap();
+        let s = parse_nmea_sentence(&buf).unwrap();
+        assert_eq!(s.checksum, s.calc_checksum());
+        let parsed = parse_rmc(s).unwrap();
+        assert_eq!(parsed.fix_time, original.fix_time);
+        assert_eq!(parsed.fix_date, original.fix_date);
+        assert_eq!(parsed.status_of_fix, original.status_of_fix);
+        assert_relative_eq!(parsed.lat.unwrap(), original.lat.unwrap(), epsilon = 1e-5);
+        assert_relative_eq!(parsed.lon.unwrap(), original.lon.unwrap(), epsilon = 1e-5);
+        assert_relative_eq!(parsed.speed_over_ground.unwrap(), original.speed_over_ground.unwrap());
+        assert_relative_eq!(parsed.true_course.unwrap(), original.true_course.unwrap());
+        assert_relative_eq!(parsed.magnetic_variation.unwrap(), original.magnetic_variation.unwrap());
+        assert_eq!(parsed.faa_mode, original.faa_mode);
+        assert_eq!(parsed.nav_status, original.nav_status);
+    }
+
+    #[test]
+    fn test_generate_rmc_v41_roundtrip() {
+        let original = RmcData {
+            fix_time: Some(NaiveTime::from_hms_milli_opt(22, 52, 7, 376).unwrap()),
+            fix_date: Some(NaiveDate::from_ymd_opt(2022, 11, 1).unwrap()),
+            status_of_fix: RmcStatusOfFix::Autonomous,
+            lat: Some(52. + 32.067 / 60.),
+            lon: Some(13. + 25.658 / 60.),
+            speed_over_ground: Some(38.9),
+            true_course: Some(324.5),
+            magnetic_variation: Some(0.0),
+            faa_mode: Some(FaaMode::Manual),
+            nav_status: Some(RmcNavigationStatus::Estimated),
+        };
+        let mut buf = heapless::String::<256>::new();
+        crate::generate::generate_sentence("GP", &original, &mut buf).unwrap();
+        let s = parse_nmea_sentence(&buf).unwrap();
+        assert_eq!(s.checksum, s.calc_checksum());
+        let parsed = parse_rmc(s).unwrap();
+        assert_eq!(parsed.fix_time, original.fix_time);
+        assert_eq!(parsed.fix_date, original.fix_date);
+        assert_eq!(parsed.status_of_fix, original.status_of_fix);
+        assert_relative_eq!(parsed.lat.unwrap(), original.lat.unwrap(), epsilon = 1e-5);
+        assert_relative_eq!(parsed.lon.unwrap(), original.lon.unwrap(), epsilon = 1e-5);
+        assert_relative_eq!(parsed.speed_over_ground.unwrap(), original.speed_over_ground.unwrap());
+        assert_relative_eq!(parsed.true_course.unwrap(), original.true_course.unwrap());
+        assert_relative_eq!(parsed.magnetic_variation.unwrap(), original.magnetic_variation.unwrap());
+        assert_eq!(parsed.faa_mode, original.faa_mode);
+        assert_eq!(parsed.nav_status, original.nav_status);
+    }
+
+    #[test]
+    fn test_generate_rmc_empty() {
+        let original = RmcData {
+            fix_time: None,
+            fix_date: None,
+            status_of_fix: RmcStatusOfFix::Invalid,
+            lat: None,
+            lon: None,
+            speed_over_ground: None,
+            true_course: None,
+            magnetic_variation: None,
+            faa_mode: Some(FaaMode::DataNotValid),
+            nav_status: None,
+        };
+        let mut buf = heapless::String::<256>::new();
+        crate::generate::generate_sentence("GP", &original, &mut buf).unwrap();
+        let s = parse_nmea_sentence(&buf).unwrap();
+        assert_eq!(s.checksum, s.calc_checksum());
+        let parsed = parse_rmc(s).unwrap();
+        assert_eq!(parsed, original);
     }
 }

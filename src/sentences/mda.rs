@@ -143,6 +143,70 @@ fn do_parse_mda(i: &str) -> IResult<&str, MdaData> {
     ))
 }
 
+impl crate::generate::GenerateNmeaBody for MdaData {
+    fn sentence_type(&self) -> SentenceType {
+        SentenceType::MDA
+    }
+
+    fn write_body(&self, f: &mut dyn core::fmt::Write) -> core::fmt::Result {
+        // 1. Pressure in inches of mercury
+        if let Some(v) = self.pressure_in_hg {
+            write!(f, "{}", v)?;
+        }
+        f.write_str(",I,")?;
+        // 3. Pressure in bars
+        if let Some(v) = self.pressure_bar {
+            write!(f, "{}", v)?;
+        }
+        f.write_str(",B,")?;
+        // 5. Air temp
+        if let Some(v) = self.air_temp_deg {
+            write!(f, "{}", v)?;
+        }
+        f.write_str(",C,")?;
+        // 7. Water temp
+        if let Some(v) = self.water_temp_deg {
+            write!(f, "{}", v)?;
+        }
+        f.write_str(",C,")?;
+        // 9. Relative humidity
+        if let Some(v) = self.rel_humidity {
+            write!(f, "{}", v)?;
+        }
+        f.write_char(',')?;
+        // 10. Absolute humidity
+        if let Some(v) = self.abs_humidity {
+            write!(f, "{}", v)?;
+        }
+        f.write_char(',')?;
+        // 11. Dew point
+        if let Some(v) = self.dew_point {
+            write!(f, "{}", v)?;
+        }
+        f.write_str(",C,")?;
+        // 13. True wind direction
+        if let Some(v) = self.wind_direction_true {
+            write!(f, "{}", v)?;
+        }
+        f.write_str(",T,")?;
+        // 15. Magnetic wind direction
+        if let Some(v) = self.wind_direction_magnetic {
+            write!(f, "{}", v)?;
+        }
+        f.write_str(",M,")?;
+        // 17. Wind speed knots
+        if let Some(v) = self.wind_speed_knots {
+            write!(f, "{}", v)?;
+        }
+        f.write_str(",N,")?;
+        // 19. Wind speed m/s
+        if let Some(v) = self.wind_speed_ms {
+            write!(f, "{}", v)?;
+        }
+        f.write_str(",M")
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use approx::assert_relative_eq;
@@ -171,5 +235,39 @@ mod tests {
         assert_relative_eq!(107.7, mda_data.wind_direction_magnetic.unwrap());
         assert_relative_eq!(1.2, mda_data.wind_speed_knots.unwrap());
         assert_relative_eq!(0.6, mda_data.wind_speed_ms.unwrap());
+    }
+
+    #[test]
+    fn test_generate_mda_roundtrip() {
+        let original = MdaData {
+            pressure_in_hg: Some(29.7544),
+            pressure_bar: Some(1.0076),
+            air_temp_deg: Some(35.5),
+            water_temp_deg: None,
+            rel_humidity: Some(42.1),
+            abs_humidity: None,
+            dew_point: Some(20.6),
+            wind_direction_true: Some(116.4),
+            wind_direction_magnetic: Some(107.7),
+            wind_speed_knots: Some(1.2),
+            wind_speed_ms: Some(0.6),
+        };
+        let mut buf = heapless::String::<256>::new();
+        crate::generate::generate_sentence("WI", &original, &mut buf).unwrap();
+
+        let s = parse_nmea_sentence(&buf).unwrap();
+        assert_eq!(s.checksum, s.calc_checksum());
+        let parsed = parse_mda(s).unwrap();
+        assert_relative_eq!(parsed.pressure_in_hg.unwrap(), 29.7544);
+        assert_relative_eq!(parsed.pressure_bar.unwrap(), 1.0076);
+        assert_relative_eq!(parsed.air_temp_deg.unwrap(), 35.5);
+        assert!(parsed.water_temp_deg.is_none());
+        assert_relative_eq!(parsed.rel_humidity.unwrap(), 42.1);
+        assert!(parsed.abs_humidity.is_none());
+        assert_relative_eq!(parsed.dew_point.unwrap(), 20.6);
+        assert_relative_eq!(parsed.wind_direction_true.unwrap(), 116.4);
+        assert_relative_eq!(parsed.wind_direction_magnetic.unwrap(), 107.7);
+        assert_relative_eq!(parsed.wind_speed_knots.unwrap(), 1.2);
+        assert_relative_eq!(parsed.wind_speed_ms.unwrap(), 0.6);
     }
 }

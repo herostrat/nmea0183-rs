@@ -173,6 +173,60 @@ pub fn parse_gsv(sentence: NmeaSentence<'_>) -> Result<GsvData, Error<'_>> {
     }
 }
 
+impl crate::generate::GenerateNmeaBody for GsvData {
+    fn sentence_type(&self) -> SentenceType {
+        SentenceType::GSV
+    }
+
+    fn write_body(&self, f: &mut dyn core::fmt::Write) -> core::fmt::Result {
+        // Field 1: number of sentences
+        write!(f, "{}", self.number_of_sentences)?;
+        f.write_char(',')?;
+
+        // Field 2: sentence number
+        write!(f, "{}", self.sentence_num)?;
+        f.write_char(',')?;
+
+        // Field 3: total satellites in view
+        write!(f, "{}", self.sats_in_view)?;
+        f.write_char(',')?;
+
+        // Fields 4..n: satellite quadruples (prn, elevation, azimuth, snr)
+        let count = self.sats_info.len();
+        for (idx, sat_opt) in self.sats_info.iter().enumerate() {
+            let is_last = idx == count - 1;
+            match sat_opt {
+                Some(sat) => {
+                    write!(f, "{},", sat.prn)?;
+                    if let Some(elev) = sat.elevation {
+                        write!(f, "{}", elev as i32)?;
+                    }
+                    f.write_char(',')?;
+                    if let Some(az) = sat.azimuth {
+                        write!(f, "{}", az as i32)?;
+                    }
+                    f.write_char(',')?;
+                    if let Some(snr) = sat.snr {
+                        write!(f, "{}", snr as i32)?;
+                    }
+                    if !is_last {
+                        f.write_char(',')?;
+                    }
+                }
+                None => {
+                    // Empty satellite quad: ,,,
+                    f.write_str(",,,")?;
+                    if !is_last {
+                        f.write_char(',')?;
+                    }
+                }
+            }
+        }
+
+        Ok(())
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -254,5 +308,84 @@ mod tests {
         assert_eq!(data.number_of_sentences, 3);
         assert_eq!(data.sentence_num, 3);
         assert_eq!(data.sats_in_view, 10);
+    }
+
+    #[test]
+    fn test_generate_gsv_roundtrip() {
+        use crate::parse::parse_nmea_sentence;
+
+        let mut sats_info = Vec::<Option<Satellite>, 4>::new();
+        sats_info
+            .push(Some(Satellite {
+                gnss_type: GnssType::Gps,
+                prn: 3,
+                elevation: Some(3.0),
+                azimuth: Some(111.0),
+                snr: Some(0.0),
+            }))
+            .unwrap();
+        sats_info
+            .push(Some(Satellite {
+                gnss_type: GnssType::Gps,
+                prn: 4,
+                elevation: Some(15.0),
+                azimuth: Some(270.0),
+                snr: Some(0.0),
+            }))
+            .unwrap();
+        sats_info
+            .push(Some(Satellite {
+                gnss_type: GnssType::Gps,
+                prn: 6,
+                elevation: Some(1.0),
+                azimuth: Some(10.0),
+                snr: None,
+            }))
+            .unwrap();
+        sats_info
+            .push(Some(Satellite {
+                gnss_type: GnssType::Gps,
+                prn: 13,
+                elevation: Some(6.0),
+                azimuth: Some(292.0),
+                snr: Some(0.0),
+            }))
+            .unwrap();
+
+        let original = GsvData {
+            gnss_type: GnssType::Gps,
+            number_of_sentences: 3,
+            sentence_num: 1,
+            sats_in_view: 11,
+            sats_info,
+        };
+        let mut buf = heapless::String::<256>::new();
+        crate::generate::generate_sentence("GP", &original, &mut buf).unwrap();
+
+        let s = parse_nmea_sentence(&buf).unwrap();
+        assert_eq!(s.checksum, s.calc_checksum());
+        let parsed = parse_gsv(s).unwrap();
+        assert_eq!(parsed.gnss_type, GnssType::Gps);
+        assert_eq!(parsed.number_of_sentences, 3);
+        assert_eq!(parsed.sentence_num, 1);
+        assert_eq!(parsed.sats_in_view, 11);
+        assert_eq!(parsed.sats_info.len(), 4);
+
+        let sat0 = parsed.sats_info[0].clone().unwrap();
+        assert_eq!(sat0.prn, 3);
+        assert_eq!(sat0.elevation, Some(3.0));
+        assert_eq!(sat0.azimuth, Some(111.0));
+        assert_eq!(sat0.snr, Some(0.0));
+
+        let sat1 = parsed.sats_info[1].clone().unwrap();
+        assert_eq!(sat1.prn, 4);
+        assert_eq!(sat1.elevation, Some(15.0));
+        assert_eq!(sat1.azimuth, Some(270.0));
+
+        let sat2 = parsed.sats_info[2].clone().unwrap();
+        assert_eq!(sat2.prn, 6);
+        assert_eq!(sat2.elevation, Some(1.0));
+        assert_eq!(sat2.azimuth, Some(10.0));
+        assert_eq!(sat2.snr, None);
     }
 }

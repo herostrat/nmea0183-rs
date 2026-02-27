@@ -74,6 +74,17 @@ impl From<FaaMode> for FixType {
     }
 }
 
+impl FaaModes {
+    /// Write the NMEA mode indicator string (e.g. "D", "NA").
+    pub fn write_nmea(&self, f: &mut dyn core::fmt::Write) -> core::fmt::Result {
+        f.write_char(self.sys_state0.to_nmea_char())?;
+        if let Some(m) = self.sys_state1 {
+            f.write_char(m.to_nmea_char())?;
+        }
+        Ok(())
+    }
+}
+
 pub(crate) fn parse_faa_modes(i: &str) -> IResult<&str, FaaModes> {
     let (rest, sym) = anychar(i)?;
 

@@ -115,6 +115,43 @@ pub fn parse_bwc(sentence: NmeaSentence<'_>) -> Result<BwcData, Error<'_>> {
     }
 }
 
+impl crate::generate::GenerateNmeaBody for BwcData {
+    fn sentence_type(&self) -> SentenceType {
+        SentenceType::BWC
+    }
+
+    fn write_body(&self, f: &mut dyn core::fmt::Write) -> core::fmt::Result {
+        use crate::sentences::gen_utils::{write_hms, write_lat_lon};
+
+        // 1. UTC time
+        write_hms(f, &self.fix_time)?;
+        f.write_char(',')?;
+        // 2-5. Latitude and longitude
+        write_lat_lon(f, &self.latitude, &self.longitude)?;
+        f.write_char(',')?;
+        // 6. True bearing
+        if let Some(v) = self.true_bearing {
+            write!(f, "{}", v)?;
+        }
+        f.write_str(",T,")?;
+        // 8. Magnetic bearing
+        if let Some(v) = self.magnetic_bearing {
+            write!(f, "{}", v)?;
+        }
+        f.write_str(",M,")?;
+        // 10. Distance
+        if let Some(v) = self.distance {
+            write!(f, "{}", v)?;
+        }
+        f.write_str(",N,")?;
+        // 12. Waypoint ID
+        if let Some(ref wp) = self.waypoint_id {
+            f.write_str(wp)?;
+        }
+        Ok(())
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use approx::assert_relative_eq;
@@ -165,5 +202,31 @@ mod tests {
             },
             data
         );
+    }
+
+    #[test]
+    fn test_generate_bwc_roundtrip() {
+        let original = BwcData {
+            fix_time: Some(NaiveTime::from_hms_opt(22, 5, 16).expect("invalid time")),
+            latitude: Some(51.5003),
+            longitude: Some(-0.7723),
+            true_bearing: Some(213.8),
+            magnetic_bearing: Some(218.0),
+            distance: Some(4.6),
+            waypoint_id: Some(ArrayString::from("EGLM").unwrap()),
+        };
+        let mut buf = heapless::String::<256>::new();
+        crate::generate::generate_sentence("GP", &original, &mut buf).unwrap();
+
+        let s = parse_nmea_sentence(&buf).unwrap();
+        assert_eq!(s.checksum, s.calc_checksum());
+        let parsed = parse_bwc(s).unwrap();
+        assert_eq!(parsed.fix_time, original.fix_time);
+        assert_relative_eq!(parsed.latitude.unwrap(), 51.5003, epsilon = 0.001);
+        assert_relative_eq!(parsed.longitude.unwrap(), -0.7723, epsilon = 0.001);
+        assert_relative_eq!(parsed.true_bearing.unwrap(), 213.8);
+        assert_relative_eq!(parsed.magnetic_bearing.unwrap(), 218.0);
+        assert_relative_eq!(parsed.distance.unwrap(), 4.6);
+        assert_eq!(&parsed.waypoint_id.unwrap(), "EGLM");
     }
 }

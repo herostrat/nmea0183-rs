@@ -91,6 +91,42 @@ fn do_parse_aam(i: &str) -> Result<AamData, Error<'_>> {
     })
 }
 
+impl crate::generate::GenerateNmeaBody for AamData {
+    fn sentence_type(&self) -> SentenceType {
+        SentenceType::AAM
+    }
+
+    fn write_body(&self, f: &mut dyn core::fmt::Write) -> core::fmt::Result {
+        // 1. Arrival circle entered: A/V
+        match self.arrival_circle_entered {
+            Some(true) => f.write_char('A')?,
+            Some(false) | None => f.write_char('V')?,
+        }
+        f.write_char(',')?;
+        // 2. Perpendicular passed: A/V
+        match self.perpendicular_passed {
+            Some(true) => f.write_char('A')?,
+            Some(false) | None => f.write_char('V')?,
+        }
+        f.write_char(',')?;
+        // 3. Arrival circle radius
+        if let Some(r) = self.arrival_circle_radius {
+            write!(f, "{}", r)?;
+        }
+        f.write_char(',')?;
+        // 4. Units
+        if let Some(u) = self.radius_units {
+            f.write_char(u)?;
+        }
+        f.write_char(',')?;
+        // 5. Waypoint ID
+        if let Some(ref wpt) = self.waypoint_id {
+            f.write_str(wpt.as_str())?;
+        }
+        Ok(())
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use approx::assert_relative_eq;
@@ -179,5 +215,27 @@ mod tests {
             assert_eq!(expected, SentenceType::AAM);
             assert_eq!(found, SentenceType::ABK);
         }
+    }
+
+    #[test]
+    fn test_generate_aam_roundtrip() {
+        let original = AamData {
+            arrival_circle_entered: Some(true),
+            perpendicular_passed: Some(true),
+            arrival_circle_radius: Some(0.1),
+            radius_units: Some('N'),
+            waypoint_id: Some(ArrayString::from("WPTNME").unwrap()),
+        };
+        let mut buf = heapless::String::<128>::new();
+        crate::generate::generate_sentence("GP", &original, &mut buf).unwrap();
+
+        let s = parse_nmea_sentence(&buf).unwrap();
+        assert_eq!(s.checksum, s.calc_checksum());
+        let parsed = parse_aam(s).unwrap();
+        assert_eq!(parsed.arrival_circle_entered, Some(true));
+        assert_eq!(parsed.perpendicular_passed, Some(true));
+        assert_relative_eq!(parsed.arrival_circle_radius.unwrap(), 0.1);
+        assert_eq!(parsed.radius_units, Some('N'));
+        assert_eq!(&parsed.waypoint_id.unwrap(), "WPTNME");
     }
 }

@@ -179,6 +179,79 @@ fn do_parse_apa(i: &str) -> Result<ApaData, Error<'_>> {
     })
 }
 
+impl crate::generate::GenerateNmeaBody for ApaData {
+    fn sentence_type(&self) -> SentenceType {
+        SentenceType::APA
+    }
+
+    fn write_body(&self, f: &mut dyn core::fmt::Write) -> core::fmt::Result {
+        // 1. Status warning (A/V)
+        match self.status_warning {
+            Some(true) => f.write_char('A')?,
+            Some(false) => f.write_char('V')?,
+            None => {}
+        }
+        f.write_char(',')?;
+        // 2. Status cycle warning (A/V)
+        match self.status_cycle_warning {
+            Some(true) => f.write_char('A')?,
+            Some(false) => f.write_char('V')?,
+            None => {}
+        }
+        f.write_char(',')?;
+        // 3. Cross track error magnitude
+        if let Some(v) = self.cross_track_error_magnitude {
+            write!(f, "{}", v)?;
+        }
+        f.write_char(',')?;
+        // 4. Direction to steer (L/R)
+        match self.steer_direction {
+            Some(SteerDirection::Left) => f.write_char('L')?,
+            Some(SteerDirection::Right) => f.write_char('R')?,
+            None => {}
+        }
+        f.write_char(',')?;
+        // 5. Cross track units (N/K)
+        match self.cross_track_units {
+            Some(CrossTrackUnits::Nautical) => f.write_char('N')?,
+            Some(CrossTrackUnits::Kilometers) => f.write_char('K')?,
+            None => {}
+        }
+        f.write_char(',')?;
+        // 6. Status arrived (A/V)
+        match self.status_arrived {
+            Some(true) => f.write_char('A')?,
+            Some(false) => f.write_char('V')?,
+            None => {}
+        }
+        f.write_char(',')?;
+        // 7. Status passed (A/V)
+        match self.status_passed {
+            Some(true) => f.write_char('A')?,
+            Some(false) => f.write_char('V')?,
+            None => {}
+        }
+        f.write_char(',')?;
+        // 8. Bearing origin to destination
+        if let Some(v) = self.bearing_origin_destination {
+            write!(f, "{}", v)?;
+        }
+        f.write_char(',')?;
+        // 9. Magnetic/True
+        match self.magnetic_true {
+            Some(MagneticTrue::Magnetic) => f.write_char('M')?,
+            Some(MagneticTrue::True) => f.write_char('T')?,
+            None => {}
+        }
+        f.write_char(',')?;
+        // 10. Waypoint ID (may include extra comma-separated fields)
+        if let Some(ref wp) = self.waypoint_id {
+            f.write_str(wp)?;
+        }
+        Ok(())
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use approx::assert_relative_eq;
@@ -277,5 +350,37 @@ mod tests {
             assert_eq!(expected, SentenceType::APA);
             assert_eq!(found, SentenceType::ABK);
         }
+    }
+
+    #[test]
+    fn test_generate_apa_roundtrip() {
+        let original = ApaData {
+            status_warning: Some(true),
+            status_cycle_warning: Some(true),
+            cross_track_error_magnitude: Some(0.1),
+            steer_direction: Some(SteerDirection::Right),
+            cross_track_units: Some(CrossTrackUnits::Nautical),
+            status_arrived: Some(false),
+            status_passed: Some(false),
+            bearing_origin_destination: Some(11.0),
+            magnetic_true: Some(MagneticTrue::Magnetic),
+            waypoint_id: Some(ArrayString::from("DEST,011,M").unwrap()),
+        };
+        let mut buf = heapless::String::<256>::new();
+        crate::generate::generate_sentence("GP", &original, &mut buf).unwrap();
+
+        let s = parse_nmea_sentence(&buf).unwrap();
+        assert_eq!(s.checksum, s.calc_checksum());
+        let parsed = parse_apa(s).unwrap();
+        assert_eq!(parsed.status_warning, Some(true));
+        assert_eq!(parsed.status_cycle_warning, Some(true));
+        assert_relative_eq!(parsed.cross_track_error_magnitude.unwrap(), 0.1);
+        assert_eq!(parsed.steer_direction.unwrap(), SteerDirection::Right);
+        assert_eq!(parsed.cross_track_units.unwrap(), CrossTrackUnits::Nautical);
+        assert_eq!(parsed.status_arrived, Some(false));
+        assert_eq!(parsed.status_passed, Some(false));
+        assert_relative_eq!(parsed.bearing_origin_destination.unwrap(), 11.0);
+        assert_eq!(parsed.magnetic_true.unwrap(), MagneticTrue::Magnetic);
+        assert_eq!(&parsed.waypoint_id.unwrap(), "DEST,011,M");
     }
 }

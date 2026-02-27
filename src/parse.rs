@@ -3,7 +3,7 @@ use core::str;
 use nom::{
     IResult, Parser as _,
     bytes::complete::{take, take_until},
-    character::complete::char,
+    character::complete::{char, one_of},
     combinator::map_res,
     sequence::preceded,
 };
@@ -77,7 +77,7 @@ fn parse_sentence_type(i: &str) -> IResult<&str, SentenceType> {
 }
 
 fn do_parse_nmea_sentence(i: &str) -> IResult<&str, NmeaSentence<'_>> {
-    let (i, talker_id) = preceded(char('$'), take(2usize)).parse(i)?;
+    let (i, talker_id) = preceded(one_of("$!"), take(2usize)).parse(i)?;
     let (i, message_id) = parse_sentence_type(i)?;
     let (i, _) = char(',').parse(i)?;
     let (i, data) = take_until("*").parse(i)?;
@@ -110,6 +110,7 @@ pub enum ParseResult {
     AAM(AamData),
     ALM(AlmData),
     APA(ApaData),
+    APB(ApbData),
     BOD(BodData),
     BWC(BwcData),
     BWW(BwwData),
@@ -132,16 +133,22 @@ pub enum ParseResult {
     MTW(MtwData),
     MWD(MwdData),
     MWV(MwvData),
+    RMB(RmbData),
     RMC(RmcData),
     ROT(RotData),
+    RPM(RpmData),
     RSA(RsaData),
     TTM(TtmData),
     TXT(TxtData),
+    VDM(VdmData),
+    VDO(VdmData),
     VDR(VdrData),
     VHW(VhwData),
     VLW(VlwData),
     VPW(VpwData),
     VTG(VtgData),
+    VWR(VwrData),
+    VWT(VwtData),
     XTE(XteData),
     WNC(WncData),
     ZDA(ZdaData),
@@ -158,6 +165,7 @@ impl From<&ParseResult> for SentenceType {
             ParseResult::AAM(_) => SentenceType::AAM,
             ParseResult::ALM(_) => SentenceType::ALM,
             ParseResult::APA(_) => SentenceType::APA,
+            ParseResult::APB(_) => SentenceType::APB,
             ParseResult::BOD(_) => SentenceType::BOD,
             ParseResult::BWC(_) => SentenceType::BWC,
             ParseResult::BWW(_) => SentenceType::BWW,
@@ -179,16 +187,22 @@ impl From<&ParseResult> for SentenceType {
             ParseResult::MTW(_) => SentenceType::MTW,
             ParseResult::MWD(_) => SentenceType::MWD,
             ParseResult::MWV(_) => SentenceType::MWV,
+            ParseResult::RMB(_) => SentenceType::RMB,
             ParseResult::RMC(_) => SentenceType::RMC,
             ParseResult::ROT(_) => SentenceType::ROT,
+            ParseResult::RPM(_) => SentenceType::RPM,
             ParseResult::RSA(_) => SentenceType::RSA,
             ParseResult::TTM(_) => SentenceType::TTM,
             ParseResult::TXT(_) => SentenceType::TXT,
+            ParseResult::VDM(_) => SentenceType::VDM,
+            ParseResult::VDO(_) => SentenceType::VDO,
             ParseResult::VDR(_) => SentenceType::VDR,
             ParseResult::VHW(_) => SentenceType::VHW,
             ParseResult::VLW(_) => SentenceType::VLW,
             ParseResult::VPW(_) => SentenceType::VPW,
             ParseResult::VTG(_) => SentenceType::VTG,
+            ParseResult::VWR(_) => SentenceType::VWR,
+            ParseResult::VWT(_) => SentenceType::VWT,
             ParseResult::XTE(_) => SentenceType::XTE,
             ParseResult::WNC(_) => SentenceType::WNC,
             ParseResult::ZFO(_) => SentenceType::ZFO,
@@ -253,6 +267,15 @@ pub fn parse_str(sentence_input: &str) -> Result<ParseResult, Error<'_>> {
                 cfg_if! {
                     if #[cfg(feature = "APA")] {
                         parse_apa(nmea_sentence).map(ParseResult::APA)
+                    } else {
+                        return Err(Error::DisabledSentence);
+                    }
+                }
+            }
+            SentenceType::APB => {
+                cfg_if! {
+                    if #[cfg(feature = "APB")] {
+                        parse_apb(nmea_sentence).map(Into::into)
                     } else {
                         return Err(Error::DisabledSentence);
                     }
@@ -447,6 +470,15 @@ pub fn parse_str(sentence_input: &str) -> Result<ParseResult, Error<'_>> {
                     }
                 }
             }
+            SentenceType::RMB => {
+                cfg_if! {
+                    if #[cfg(feature = "RMB")] {
+                        parse_rmb(nmea_sentence).map(Into::into)
+                    } else {
+                        return Err(Error::DisabledSentence);
+                    }
+                }
+            }
             SentenceType::RMC => {
                 cfg_if! {
                     if #[cfg(feature = "RMC")] {
@@ -474,6 +506,15 @@ pub fn parse_str(sentence_input: &str) -> Result<ParseResult, Error<'_>> {
                     }
                 }
             }
+            SentenceType::RPM => {
+                cfg_if! {
+                    if #[cfg(feature = "RPM")] {
+                        parse_rpm(nmea_sentence).map(Into::into)
+                    } else {
+                        return Err(Error::DisabledSentence);
+                    }
+                }
+            }
             SentenceType::RSA => {
                 cfg_if! {
                     if #[cfg(feature = "RSA")] {
@@ -496,6 +537,15 @@ pub fn parse_str(sentence_input: &str) -> Result<ParseResult, Error<'_>> {
                 cfg_if! {
                     if #[cfg(feature = "TXT")] {
                         parse_txt(nmea_sentence).map(ParseResult::TXT)
+                    } else {
+                        return Err(Error::DisabledSentence);
+                    }
+                }
+            }
+            SentenceType::VDM | SentenceType::VDO => {
+                cfg_if! {
+                    if #[cfg(feature = "VDM")] {
+                        parse_vdm(nmea_sentence).map(Into::into)
                     } else {
                         return Err(Error::DisabledSentence);
                     }
@@ -541,6 +591,24 @@ pub fn parse_str(sentence_input: &str) -> Result<ParseResult, Error<'_>> {
                 cfg_if! {
                     if #[cfg(feature = "VTG")] {
                         parse_vtg(nmea_sentence).map(ParseResult::VTG)
+                    } else {
+                        return Err(Error::DisabledSentence);
+                    }
+                }
+            }
+            SentenceType::VWR => {
+                cfg_if! {
+                    if #[cfg(feature = "VWR")] {
+                        parse_vwr(nmea_sentence).map(Into::into)
+                    } else {
+                        return Err(Error::DisabledSentence);
+                    }
+                }
+            }
+            SentenceType::VWT => {
+                cfg_if! {
+                    if #[cfg(feature = "VWT")] {
+                        parse_vwt(nmea_sentence).map(Into::into)
                     } else {
                         return Err(Error::DisabledSentence);
                     }

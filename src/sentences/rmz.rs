@@ -76,6 +76,21 @@ pub fn parse_pgrmz(sentence: NmeaSentence<'_>) -> Result<PgrmzData, Error<'_>> {
     }
 }
 
+impl crate::generate::GenerateNmeaBody for PgrmzData {
+    fn sentence_type(&self) -> SentenceType {
+        SentenceType::RMZ
+    }
+
+    fn write_body(&self, f: &mut dyn core::fmt::Write) -> core::fmt::Result {
+        write!(f, "{},f,", self.altitude)?;
+        match self.fix_type {
+            PgrmzFixType::NoFix => f.write_char('1'),
+            PgrmzFixType::TwoDimensional => f.write_char('2'),
+            PgrmzFixType::ThreeDimensional => f.write_char('3'),
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -102,5 +117,21 @@ mod tests {
                 found: "XX"
             })
         ));
+    }
+
+    #[test]
+    fn test_generate_pgrmz_roundtrip() {
+        let original = PgrmzData {
+            altitude: 2282,
+            fix_type: PgrmzFixType::ThreeDimensional,
+        };
+        let mut buf = heapless::String::<256>::new();
+        crate::generate::generate_sentence("PG", &original, &mut buf).unwrap();
+
+        let s = parse_nmea_sentence(&buf).unwrap();
+        assert_eq!(s.checksum, s.calc_checksum());
+        let parsed = parse_pgrmz(s).unwrap();
+        assert_eq!(parsed.altitude, 2282);
+        assert_eq!(parsed.fix_type, PgrmzFixType::ThreeDimensional);
     }
 }

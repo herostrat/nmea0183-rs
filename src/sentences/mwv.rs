@@ -112,6 +112,43 @@ fn do_parse_mwv(i: &str) -> IResult<&str, MwvData> {
     ))
 }
 
+impl crate::generate::GenerateNmeaBody for MwvData {
+    fn sentence_type(&self) -> SentenceType {
+        SentenceType::MWV
+    }
+
+    fn write_body(&self, f: &mut dyn core::fmt::Write) -> core::fmt::Result {
+        // 1. Wind direction
+        if let Some(v) = self.wind_direction {
+            write!(f, "{}", v)?;
+        }
+        f.write_char(',')?;
+        // 2. Reference (R/T)
+        match self.reference {
+            Some(MwvReference::Relative) => f.write_char('R')?,
+            Some(MwvReference::Theoretical) => f.write_char('T')?,
+            None => {}
+        }
+        f.write_char(',')?;
+        // 3. Wind speed
+        if let Some(v) = self.wind_speed {
+            write!(f, "{}", v)?;
+        }
+        f.write_char(',')?;
+        // 4. Wind speed units
+        match self.wind_speed_units {
+            Some(MwvWindSpeedUnits::KilometersPerHour) => f.write_char('K')?,
+            Some(MwvWindSpeedUnits::MetersPerSecond) => f.write_char('M')?,
+            Some(MwvWindSpeedUnits::Knots) => f.write_char('N')?,
+            Some(MwvWindSpeedUnits::MilesPerHour) => f.write_char('S')?,
+            None => {}
+        }
+        f.write_char(',')?;
+        // 5. Data valid
+        f.write_char(if self.data_valid { 'A' } else { 'V' })
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use approx::assert_relative_eq;
@@ -133,5 +170,27 @@ mod tests {
             wimwv_data.wind_speed_units.unwrap()
         );
         assert!(wimwv_data.data_valid);
+    }
+
+    #[test]
+    fn test_generate_mwv_roundtrip() {
+        let original = MwvData {
+            wind_direction: Some(41.1),
+            reference: Some(MwvReference::Relative),
+            wind_speed: Some(1.0),
+            wind_speed_units: Some(MwvWindSpeedUnits::Knots),
+            data_valid: true,
+        };
+        let mut buf = heapless::String::<256>::new();
+        crate::generate::generate_sentence("WI", &original, &mut buf).unwrap();
+
+        let s = parse_nmea_sentence(&buf).unwrap();
+        assert_eq!(s.checksum, s.calc_checksum());
+        let parsed = parse_mwv(s).unwrap();
+        assert_relative_eq!(parsed.wind_direction.unwrap(), 41.1);
+        assert_eq!(parsed.reference.unwrap(), MwvReference::Relative);
+        assert_relative_eq!(parsed.wind_speed.unwrap(), 1.0);
+        assert_eq!(parsed.wind_speed_units.unwrap(), MwvWindSpeedUnits::Knots);
+        assert!(parsed.data_valid);
     }
 }

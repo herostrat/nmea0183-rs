@@ -3,6 +3,7 @@
 pub mod aam;
 pub mod alm;
 pub mod apa;
+pub mod apb;
 pub mod bod;
 pub mod bwc;
 pub mod bww;
@@ -25,18 +26,23 @@ pub mod mda;
 pub mod mtw;
 pub mod mwd;
 pub mod mwv;
+pub mod rmb;
 pub mod rmc;
 pub mod rmz;
 pub mod rot;
+pub mod rpm;
 pub mod rsa;
 pub mod ttm;
 pub mod txt;
 pub mod utils;
+pub mod vdm;
 pub mod vdr;
 pub mod vhw;
 pub mod vlw;
 pub mod vpw;
 pub mod vtg;
+pub mod vwr;
+pub mod vwt;
 pub mod xte;
 pub mod wnc;
 pub mod zda;
@@ -53,6 +59,7 @@ pub use {
     aam::{AamData, parse_aam},
     alm::{AlmData, parse_alm},
     apa::{ApaData, parse_apa},
+    apb::{ApbData, parse_apb},
     bod::{BodData, parse_bod},
     bwc::{BwcData, parse_bwc},
     bww::{BwwData, parse_bww},
@@ -78,20 +85,25 @@ pub use {
     mtw::{MtwData, parse_mtw},
     mwd::{MwdData, parse_mwd},
     mwv::{MwvData, parse_mwv},
+    rmb::{RmbData, parse_rmb},
     rmc::{RmcData, parse_rmc},
     rmz::{PgrmzData, parse_pgrmz},
     rot::{RotData, parse_rot},
+    rpm::{RpmData, RpmSource, parse_rpm},
     rsa::{RsaData, parse_rsa},
     ttm::{
         TtmAngle, TtmData, TtmDistanceUnit, TtmReference, TtmStatus, TtmTypeOfAcquisition,
         parse_ttm,
     },
     txt::{TxtData, parse_txt},
+    vdm::{VdmData, parse_vdm},
     vdr::{VdrData, parse_vdr},
     vhw::{VhwData, parse_vhw},
     vlw::{VlwData, parse_vlw},
     vpw::{VpwData, parse_vpw},
     vtg::{VtgData, parse_vtg},
+    vwr::{VwrData, parse_vwr},
+    vwt::{VwtData, parse_vwt},
     xte::{XteData, parse_xte},
     wnc::{WncData, parse_wnc},
     zda::{ZdaData, parse_zda},

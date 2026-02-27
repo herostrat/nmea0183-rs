@@ -89,6 +89,37 @@ pub fn parse_bod(sentence: NmeaSentence<'_>) -> Result<BodData, Error<'_>> {
     }
 }
 
+impl crate::generate::GenerateNmeaBody for BodData {
+    fn sentence_type(&self) -> SentenceType {
+        SentenceType::BOD
+    }
+
+    fn write_body(&self, f: &mut dyn core::fmt::Write) -> core::fmt::Result {
+        // 1. Bearing, degrees True
+        if let Some(v) = self.bearing_true {
+            write!(f, "{}", v)?;
+        }
+        f.write_str(",T,")?;
+        // 3. Bearing, degrees Magnetic
+        if let Some(v) = self.bearing_magnetic {
+            write!(f, "{}", v)?;
+        }
+        f.write_str(",M,")?;
+        // 5. Destination Waypoint
+        if let Some(ref wpt) = self.to_waypoint {
+            f.write_str(wpt.as_str())?;
+        }
+        // 6. Origin Waypoint (optional, preceded by comma)
+        if self.from_waypoint.is_some() {
+            f.write_char(',')?;
+            if let Some(ref wpt) = self.from_waypoint {
+                f.write_str(wpt.as_str())?;
+            }
+        }
+        Ok(())
+    }
+}
+
 #[cfg(test)]
 mod tests {
 
@@ -161,5 +192,25 @@ mod tests {
         assert_relative_eq!(data.bearing_magnetic.unwrap(), 105.6);
         assert_eq!(data.to_waypoint.as_deref(), Some("POINTB"));
         assert!(data.from_waypoint.is_none());
+    }
+
+    #[test]
+    fn test_generate_bod_roundtrip() {
+        let original = BodData {
+            bearing_true: Some(97.0),
+            bearing_magnetic: Some(103.2),
+            to_waypoint: Some(ArrayString::from("POINTB").unwrap()),
+            from_waypoint: Some(ArrayString::from("POINTA").unwrap()),
+        };
+        let mut buf = heapless::String::<128>::new();
+        crate::generate::generate_sentence("GP", &original, &mut buf).unwrap();
+
+        let s = parse_nmea_sentence(&buf).unwrap();
+        assert_eq!(s.checksum, s.calc_checksum());
+        let parsed = parse_bod(s).unwrap();
+        assert_relative_eq!(parsed.bearing_true.unwrap(), 97.0);
+        assert_relative_eq!(parsed.bearing_magnetic.unwrap(), 103.2);
+        assert_eq!(parsed.to_waypoint.as_deref(), Some("POINTB"));
+        assert_eq!(parsed.from_waypoint.as_deref(), Some("POINTA"));
     }
 }

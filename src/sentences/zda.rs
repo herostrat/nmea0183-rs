@@ -143,6 +143,47 @@ fn do_parse_zda(i: &str) -> IResult<&str, ZdaData> {
     ))
 }
 
+impl crate::generate::GenerateNmeaBody for ZdaData {
+    fn sentence_type(&self) -> SentenceType {
+        SentenceType::ZDA
+    }
+
+    fn write_body(&self, f: &mut dyn core::fmt::Write) -> core::fmt::Result {
+        // 1. UTC time
+        crate::sentences::gen_utils::write_hms(f, &self.utc_time)?;
+        f.write_char(',')?;
+        // 2. Day
+        if let Some(d) = self.day {
+            write!(f, "{:02}", d)?;
+        }
+        f.write_char(',')?;
+        // 3. Month
+        if let Some(m) = self.month {
+            write!(f, "{:02}", m)?;
+        }
+        f.write_char(',')?;
+        // 4. Year (4 digits)
+        if let Some(y) = self.year {
+            write!(f, "{:04}", y)?;
+        }
+        f.write_char(',')?;
+        // 5. Local zone hours (may be negative)
+        if let Some(h) = self.local_zone_hours {
+            if h < 0 {
+                write!(f, "-{:01}", h.unsigned_abs())?;
+            } else {
+                write!(f, "{:01}", h)?;
+            }
+        }
+        f.write_char(',')?;
+        // 6. Local zone minutes
+        if let Some(m) = self.local_zone_minutes {
+            write!(f, "{}", m.unsigned_abs())?;
+        }
+        Ok(())
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use chrono::TimeZone;
@@ -325,5 +366,29 @@ mod tests {
             .offset(),
             Some(FixedOffset::east_opt((9 * 60 + 20) * 60).unwrap()),
         );
+    }
+
+    #[test]
+    fn test_generate_zda_roundtrip() {
+        let original = ZdaData {
+            utc_time: Some(NaiveTime::from_hms_opt(16, 0, 12).unwrap()),
+            day: Some(11),
+            month: Some(3),
+            year: Some(2004),
+            local_zone_hours: Some(5),
+            local_zone_minutes: Some(30),
+        };
+        let mut buf = heapless::String::<128>::new();
+        crate::generate::generate_sentence("GP", &original, &mut buf).unwrap();
+
+        let s = parse_nmea_sentence(&buf).unwrap();
+        assert_eq!(s.checksum, s.calc_checksum());
+        let parsed = parse_zda(s).unwrap();
+        assert_eq!(parsed.utc_time, original.utc_time);
+        assert_eq!(parsed.day, Some(11));
+        assert_eq!(parsed.month, Some(3));
+        assert_eq!(parsed.year, Some(2004));
+        assert_eq!(parsed.local_zone_hours, Some(5));
+        assert_eq!(parsed.local_zone_minutes, Some(30));
     }
 }

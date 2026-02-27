@@ -170,6 +170,72 @@ fn do_parse_alm(i: &str) -> IResult<&str, AlmData> {
     ))
 }
 
+/// Helper to write an optional hex value followed by a comma.
+fn write_hex_field<T: core::fmt::UpperHex>(
+    f: &mut dyn core::fmt::Write,
+    val: &Option<T>,
+) -> core::fmt::Result {
+    if let Some(v) = val {
+        write!(f, "{:X}", v)?;
+    }
+    f.write_char(',')
+}
+
+/// Helper to write an optional hex value (no trailing comma).
+fn write_hex_opt<T: core::fmt::UpperHex>(
+    f: &mut dyn core::fmt::Write,
+    val: &Option<T>,
+) -> core::fmt::Result {
+    if let Some(v) = val {
+        write!(f, "{:X}", v)?;
+    }
+    Ok(())
+}
+
+impl crate::generate::GenerateNmeaBody for AlmData {
+    fn sentence_type(&self) -> SentenceType {
+        SentenceType::ALM
+    }
+
+    fn write_body(&self, f: &mut dyn core::fmt::Write) -> core::fmt::Result {
+        use crate::sentences::gen_utils::write_field;
+
+        // Field 1: Total number of messages (decimal)
+        write_field(f, &self.total_number_of_messages)?;
+
+        // Field 2: Sentence number (decimal)
+        write_field(f, &self.sentence_number)?;
+
+        // Field 3: Satellite PRN number (decimal, zero-padded to 2 digits)
+        if let Some(prn) = self.satellite_prn_number {
+            write!(f, "{:02}", prn)?;
+        }
+        f.write_char(',')?;
+
+        // Field 4: GPS Week Number (decimal)
+        write_field(f, &self.gps_week_number)?;
+
+        // Fields 5-13: hex fields with comma
+        write_hex_field(f, &self.sv_health)?;
+        write_hex_field(f, &self.eccentricity)?;
+        write_hex_field(f, &self.almanac_reference_time)?;
+        write_hex_field(f, &self.inclination_angle)?;
+        write_hex_field(f, &self.rate_of_right_ascension)?;
+        write_hex_field(f, &self.root_of_semi_major_axis)?;
+        write_hex_field(f, &self.argument_of_perigee)?;
+        write_hex_field(f, &self.longitude_of_ascension_node)?;
+        write_hex_field(f, &self.mean_anomaly)?;
+
+        // Field 14: F0 Clock Parameter (hex)
+        write_hex_field(f, &self.f0_clock_parameter)?;
+
+        // Field 15: F1 Clock Parameter (hex, last field, no trailing comma)
+        write_hex_opt(f, &self.f1_clock_parameter)?;
+
+        Ok(())
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use crate::{parse_nmea_sentence, sentences::parse_alm};
@@ -227,5 +293,49 @@ mod tests {
         assert_eq!(mean_anomaly, data.mean_anomaly.unwrap());
         assert_eq!(f0_clock_parameter, data.f0_clock_parameter.unwrap());
         assert_eq!(f1_clock_parameter, data.f1_clock_parameter.unwrap());
+    }
+
+    #[test]
+    fn test_generate_alm_roundtrip() {
+        use super::AlmData;
+
+        let original = AlmData {
+            total_number_of_messages: Some(31),
+            sentence_number: Some(1),
+            satellite_prn_number: Some(2),
+            gps_week_number: Some(1617),
+            sv_health: Some(0x00),
+            eccentricity: Some(0x50F6),
+            almanac_reference_time: Some(0x0F),
+            inclination_angle: Some(0xFD98),
+            rate_of_right_ascension: Some(0xFD39),
+            root_of_semi_major_axis: Some(0xA10CF3),
+            argument_of_perigee: Some(0x81389B),
+            longitude_of_ascension_node: Some(0x423632),
+            mean_anomaly: Some(0xBD913C),
+            f0_clock_parameter: Some(0x148),
+            f1_clock_parameter: Some(0x001),
+        };
+        let mut buf = heapless::String::<256>::new();
+        crate::generate::generate_sentence("GP", &original, &mut buf).unwrap();
+
+        let s = parse_nmea_sentence(&buf).unwrap();
+        assert_eq!(s.checksum, s.calc_checksum());
+        let parsed = parse_alm(s).unwrap();
+        assert_eq!(parsed.total_number_of_messages, Some(31));
+        assert_eq!(parsed.sentence_number, Some(1));
+        assert_eq!(parsed.satellite_prn_number, Some(2));
+        assert_eq!(parsed.gps_week_number, Some(1617));
+        assert_eq!(parsed.sv_health, Some(0x00));
+        assert_eq!(parsed.eccentricity, Some(0x50F6));
+        assert_eq!(parsed.almanac_reference_time, Some(0x0F));
+        assert_eq!(parsed.inclination_angle, Some(0xFD98));
+        assert_eq!(parsed.rate_of_right_ascension, Some(0xFD39));
+        assert_eq!(parsed.root_of_semi_major_axis, Some(0xA10CF3));
+        assert_eq!(parsed.argument_of_perigee, Some(0x81389B));
+        assert_eq!(parsed.longitude_of_ascension_node, Some(0x423632));
+        assert_eq!(parsed.mean_anomaly, Some(0xBD913C));
+        assert_eq!(parsed.f0_clock_parameter, Some(0x148));
+        assert_eq!(parsed.f1_clock_parameter, Some(0x001));
     }
 }

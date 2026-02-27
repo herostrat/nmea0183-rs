@@ -109,6 +109,44 @@ pub fn parse_gga(sentence: NmeaSentence<'_>) -> Result<GgaData, Error<'_>> {
     }
 }
 
+impl crate::generate::GenerateNmeaBody for GgaData {
+    fn sentence_type(&self) -> SentenceType {
+        SentenceType::GGA
+    }
+
+    fn write_body(&self, f: &mut dyn core::fmt::Write) -> core::fmt::Result {
+        use crate::sentences::gen_utils::*;
+
+        // 1: fix_time
+        write_hms(f, &self.fix_time)?;
+        f.write_str(",")?;
+        // 2-5: lat,N/S,lon,E/W
+        write_lat_lon(f, &self.latitude, &self.longitude)?;
+        f.write_str(",")?;
+        // 6: fix quality
+        if let Some(ft) = self.fix_type {
+            write!(f, "{}", ft.to_nmea_char())?;
+        }
+        f.write_str(",")?;
+        // 7: number of satellites
+        write_field(f, &self.fix_satellites)?;
+        // 8: HDOP
+        write_field(f, &self.hdop)?;
+        // 9: altitude
+        write_field(f, &self.altitude)?;
+        // 10: M
+        f.write_str("M,")?;
+        // 11: geoid separation
+        write_field(f, &self.geoid_separation)?;
+        // 12: M
+        f.write_str("M,")?;
+        // 13: DGPS age (empty)
+        f.write_str(",")?;
+        // 14: DGPS station ID (empty)
+        Ok(())
+    }
+}
+
 #[cfg(not(feature = "std"))]
 #[cfg(feature = "serde")]
 mod serde_naive_time {
@@ -239,6 +277,53 @@ mod tests {
         assert_eq!(sentence.checksum, 0x4f);
         let data = parse_gga(sentence).unwrap();
         assert_eq!(data.fix_type.unwrap(), FixType::Invalid);
+    }
+
+    #[test]
+    fn test_generate_gga_roundtrip() {
+        let original = GgaData {
+            fix_time: Some(NaiveTime::from_hms_milli_opt(3, 37, 45, 222).unwrap()),
+            fix_type: Some(FixType::Gps),
+            latitude: Some(56. + 50.82344 / 60.),
+            longitude: Some(35. + 48.9778 / 60.),
+            fix_satellites: Some(7),
+            hdop: Some(1.8),
+            altitude: Some(101.2),
+            geoid_separation: Some(14.7),
+        };
+        let mut buf = heapless::String::<256>::new();
+        crate::generate::generate_sentence("GP", &original, &mut buf).unwrap();
+        let s = parse_nmea_sentence(&buf).unwrap();
+        assert_eq!(s.checksum, s.calc_checksum());
+        let parsed = parse_gga(s).unwrap();
+        assert_eq!(parsed.fix_time, original.fix_time);
+        assert_eq!(parsed.fix_type, original.fix_type);
+        assert_relative_eq!(parsed.latitude.unwrap(), original.latitude.unwrap(), epsilon = 1e-5);
+        assert_relative_eq!(parsed.longitude.unwrap(), original.longitude.unwrap(), epsilon = 1e-5);
+        assert_eq!(parsed.fix_satellites, original.fix_satellites);
+        assert_relative_eq!(parsed.hdop.unwrap(), original.hdop.unwrap());
+        assert_relative_eq!(parsed.altitude.unwrap(), original.altitude.unwrap());
+        assert_relative_eq!(parsed.geoid_separation.unwrap(), original.geoid_separation.unwrap());
+    }
+
+    #[test]
+    fn test_generate_gga_empty() {
+        let original = GgaData {
+            fix_time: None,
+            fix_type: Some(FixType::Invalid),
+            latitude: None,
+            longitude: None,
+            fix_satellites: None,
+            hdop: None,
+            altitude: None,
+            geoid_separation: None,
+        };
+        let mut buf = heapless::String::<256>::new();
+        crate::generate::generate_sentence("GP", &original, &mut buf).unwrap();
+        let s = parse_nmea_sentence(&buf).unwrap();
+        assert_eq!(s.checksum, s.calc_checksum());
+        let parsed = parse_gga(s).unwrap();
+        assert_eq!(parsed, original);
     }
 
     #[cfg(feature = "serde")]

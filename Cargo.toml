@@ -84,7 +84,7 @@ GNSS = ["APA", "ALM", "GBS", "GGA", "GLL", "GNS", "GSA", "GST", "GSV", "RMC", "V
 ## Waypoint
 waypoint = ["AAM", "BOD", "BWC", "BWW", "WNC", "ZFO", "ZTG"]
 ## Maritime
-maritime = ["waypoint", "water", "radar", "heading", "navigation", "wind", "equipment", "current"]
+maritime = ["waypoint", "water", "radar", "heading", "navigation", "wind", "equipment", "current", "ais"]
 ## Radar
 radar = ["TTM"]
 ## Water
@@ -92,11 +92,13 @@ water = ["DBK", "DBS", "DBT", "DPT", "MTW", "VHW", "VLW"]
 ## Heading
 heading = ["HDG", "HDM", "HSC", "ROT"]
 ## Navigation
-navigation = ["XTE"]
+navigation = ["APB", "RMB", "XTE"]
 ## Wind
-wind = ["MWD", "VPW"]
+wind = ["MWD", "VPW", "VWR", "VWT"]
 ## Equipment
-equipment = ["RSA"]
+equipment = ["RPM", "RSA"]
+## AIS
+ais = ["VDM"]
 ## Current
 current = ["VDR"]
 ## Vendor-specific messages
@@ -117,6 +119,10 @@ ALM = []
 ## Autopilot Sentence "A"
 ## (feature: `GNSS`)
 APA = []
+
+## Autopilot Sentence "B"
+## (feature: `navigation`)
+APB = []
 
 ## Bearing - Waypoint to Waypoint
 ## (feature: `waypoint`)
@@ -206,6 +212,10 @@ MWD = []
 ## (feature: `other`)
 MWV = []
 
+## Recommended Minimum Navigation Information
+## (feature: `navigation`)
+RMB = []
+
 ## * Recommended Minimum Navigation Information
 ## (feature: `GNSS`)
 RMC = []
@@ -218,6 +228,10 @@ RMZ = []
 ## (feature: `heading`)
 ROT = []
 
+## Revolutions
+## (feature: `equipment`)
+RPM = []
+
 ## Rudder Sensor Angle
 ## (feature: `equipment`)
 RSA = []
@@ -229,6 +243,10 @@ TTM = []
 ## * Text message
 ## (feature: `other`)
 TXT = []
+
+## AIS VHF Data-Link Message
+## (feature: `ais`)
+VDM = []
 
 ## Set and Drift
 ## (feature: `current`)
@@ -249,6 +267,14 @@ VPW = []
 ## * Track made good and Ground speed
 ## (feature: `GNSS`)
 VTG = []
+
+## Relative Wind Speed and Angle
+## (feature: `wind`)
+VWR = []
+
+## True Wind Speed and Angle
+## (feature: `wind`)
+VWT = []
 
 ## Cross-Track Error, Measured
 ## (feature: `navigation`)

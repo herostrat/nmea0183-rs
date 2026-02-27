@@ -233,6 +233,56 @@ pub fn parse_gsa(sentence: NmeaSentence<'_>) -> Result<GsaData, Error<'_>> {
     }
 }
 
+impl crate::generate::GenerateNmeaBody for GsaData {
+    fn sentence_type(&self) -> SentenceType {
+        SentenceType::GSA
+    }
+
+    fn write_body(&self, f: &mut dyn core::fmt::Write) -> core::fmt::Result {
+        // Field 1: mode1
+        match self.mode1 {
+            GsaMode1::Manual => f.write_char('M')?,
+            GsaMode1::Automatic => f.write_char('A')?,
+        }
+        f.write_char(',')?;
+
+        // Field 2: mode2
+        match self.mode2 {
+            GsaMode2::NoFix => f.write_char('1')?,
+            GsaMode2::Fix2D => f.write_char('2')?,
+            GsaMode2::Fix3D => f.write_char('3')?,
+        }
+        f.write_char(',')?;
+
+        // Fields 3-14: PRN numbers (12 slots)
+        for idx in 0..12 {
+            if let Some(&prn) = self.fix_sats_prn.get(idx) {
+                write!(f, "{}", prn)?;
+            }
+            f.write_char(',')?;
+        }
+
+        // Field 15: PDOP
+        if let Some(pdop) = self.pdop {
+            write!(f, "{}", pdop)?;
+        }
+        f.write_char(',')?;
+
+        // Field 16: HDOP
+        if let Some(hdop) = self.hdop {
+            write!(f, "{}", hdop)?;
+        }
+        f.write_char(',')?;
+
+        // Field 17: VDOP
+        if let Some(vdop) = self.vdop {
+            write!(f, "{}", vdop)?;
+        }
+
+        Ok(())
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -278,5 +328,53 @@ mod tests {
             let s = parse_nmea_sentence(line).unwrap();
             parse_gsa(s).unwrap();
         }
+    }
+
+    #[test]
+    fn test_generate_gsa_roundtrip() {
+        let original = GsaData {
+            mode1: GsaMode1::Automatic,
+            mode2: GsaMode2::Fix3D,
+            fix_sats_prn: Vec::from_slice(&[19, 28, 14, 18, 27, 22, 31, 39]).unwrap(),
+            pdop: Some(1.7),
+            hdop: Some(1.0),
+            vdop: Some(1.3),
+        };
+        let mut buf = heapless::String::<256>::new();
+        crate::generate::generate_sentence("GP", &original, &mut buf).unwrap();
+
+        let s = parse_nmea_sentence(&buf).unwrap();
+        assert_eq!(s.checksum, s.calc_checksum());
+        let parsed = parse_gsa(s).unwrap();
+        assert_eq!(parsed.mode1, GsaMode1::Automatic);
+        assert_eq!(parsed.mode2, GsaMode2::Fix3D);
+        assert_eq!(
+            parsed.fix_sats_prn,
+            Vec::<u32, 18>::from_slice(&[19, 28, 14, 18, 27, 22, 31, 39]).unwrap()
+        );
+        assert_eq!(parsed.pdop, Some(1.7));
+        assert_eq!(parsed.hdop, Some(1.0));
+        assert_eq!(parsed.vdop, Some(1.3));
+    }
+
+    #[test]
+    fn test_generate_gsa_empty_prns() {
+        let original = GsaData {
+            mode1: GsaMode1::Manual,
+            mode2: GsaMode2::NoFix,
+            fix_sats_prn: Vec::new(),
+            pdop: None,
+            hdop: None,
+            vdop: None,
+        };
+        let mut buf = heapless::String::<256>::new();
+        crate::generate::generate_sentence("GP", &original, &mut buf).unwrap();
+
+        let s = parse_nmea_sentence(&buf).unwrap();
+        assert_eq!(s.checksum, s.calc_checksum());
+        let parsed = parse_gsa(s).unwrap();
+        assert_eq!(parsed.mode1, GsaMode1::Manual);
+        assert_eq!(parsed.mode2, GsaMode2::NoFix);
+        assert!(parsed.fix_sats_prn.is_empty());
     }
 }

@@ -243,6 +243,109 @@ fn parse_ttm_angle(i: &str) -> IResult<&str, Option<TtmAngle>> {
     ))
 }
 
+/// Write a TtmAngle (value,reference_char) or (,) if None.
+fn write_ttm_angle(
+    f: &mut dyn core::fmt::Write,
+    angle: &Option<TtmAngle>,
+) -> core::fmt::Result {
+    match angle {
+        Some(a) => {
+            write!(f, "{}", a.angle)?;
+            f.write_char(',')?;
+            match a.reference {
+                TtmReference::Relative => f.write_char('R'),
+                TtmReference::Theoretical => f.write_char('T'),
+            }
+        }
+        None => f.write_char(','),
+    }
+}
+
+impl crate::generate::GenerateNmeaBody for TtmData {
+    fn sentence_type(&self) -> SentenceType {
+        SentenceType::TTM
+    }
+
+    fn write_body(&self, f: &mut dyn core::fmt::Write) -> core::fmt::Result {
+        use crate::sentences::gen_utils::{write_hms, write_opt};
+
+        // Field 1: Target number
+        write_opt(f, &self.target_number)?;
+        f.write_char(',')?;
+
+        // Field 2: Target distance
+        write_opt(f, &self.target_distance)?;
+        f.write_char(',')?;
+
+        // Fields 3-4: Bearing from own ship (angle,reference)
+        write_ttm_angle(f, &self.bearing_from_own_ship)?;
+        f.write_char(',')?;
+
+        // Field 5: Target speed
+        write_opt(f, &self.target_speed)?;
+        f.write_char(',')?;
+
+        // Fields 6-7: Target course (angle,reference)
+        write_ttm_angle(f, &self.target_course)?;
+        f.write_char(',')?;
+
+        // Field 8: Distance of CPA
+        write_opt(f, &self.distance_of_cpa)?;
+        f.write_char(',')?;
+
+        // Field 9: Time to CPA
+        write_opt(f, &self.time_to_cpa)?;
+        f.write_char(',')?;
+
+        // Field 10: Speed/distance unit
+        if let Some(unit) = &self.speed_or_distance_unit {
+            match unit {
+                TtmDistanceUnit::Kilometer => f.write_char('K')?,
+                TtmDistanceUnit::NauticalMile => f.write_char('N')?,
+                TtmDistanceUnit::StatuteMile => f.write_char('S')?,
+            }
+        }
+        f.write_char(',')?;
+
+        // Field 11: Target name
+        if let Some(name) = &self.target_name {
+            f.write_str(name.as_str())?;
+        }
+        f.write_char(',')?;
+
+        // Field 12: Target status
+        if let Some(status) = &self.target_status {
+            match status {
+                TtmStatus::Lost => f.write_char('L')?,
+                TtmStatus::Query => f.write_char('Q')?,
+                TtmStatus::Tracking => f.write_char('T')?,
+            }
+        }
+        f.write_char(',')?;
+
+        // Field 13: Reference target
+        if self.is_target_reference {
+            f.write_char('R')?;
+        }
+        f.write_char(',')?;
+
+        // Field 14: Time of data
+        write_hms(f, &self.time_of_data)?;
+        f.write_char(',')?;
+
+        // Field 15: Type of acquisition
+        if let Some(toa) = &self.type_of_acquisition {
+            match toa {
+                TtmTypeOfAcquisition::Automatic => f.write_char('A')?,
+                TtmTypeOfAcquisition::Manual => f.write_char('M')?,
+                TtmTypeOfAcquisition::Reported => f.write_char('R')?,
+            }
+        }
+
+        Ok(())
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use approx::assert_relative_eq;
@@ -315,5 +418,88 @@ mod tests {
                 type_of_acquisition: None,
             })
         );
+    }
+
+    #[test]
+    fn test_generate_ttm_roundtrip() {
+        let original = TtmData {
+            target_number: Some(1),
+            target_distance: Some(0.2),
+            bearing_from_own_ship: Some(TtmAngle {
+                angle: 190.8,
+                reference: TtmReference::Theoretical,
+            }),
+            target_speed: Some(12.1),
+            target_course: Some(TtmAngle {
+                angle: 109.7,
+                reference: TtmReference::Theoretical,
+            }),
+            distance_of_cpa: Some(0.1),
+            time_to_cpa: Some(0.5),
+            speed_or_distance_unit: Some(TtmDistanceUnit::NauticalMile),
+            target_name: Some(heapless::String::try_from("TGT01").unwrap()),
+            target_status: Some(TtmStatus::Tracking),
+            is_target_reference: false,
+            time_of_data: Some(NaiveTime::from_hms_opt(10, 0, 21).unwrap()),
+            type_of_acquisition: Some(TtmTypeOfAcquisition::Automatic),
+        };
+        let mut buf = heapless::String::<256>::new();
+        crate::generate::generate_sentence("RA", &original, &mut buf).unwrap();
+
+        let s = parse_nmea_sentence(&buf).unwrap();
+        assert_eq!(s.checksum, s.calc_checksum());
+        let parsed = parse_ttm(s).unwrap();
+        assert_eq!(parsed.target_number, Some(1));
+        assert_relative_eq!(parsed.target_distance.unwrap(), 0.2);
+        let bearing = parsed.bearing_from_own_ship.unwrap();
+        assert_relative_eq!(bearing.angle, 190.8);
+        assert_eq!(bearing.reference, TtmReference::Theoretical);
+        assert_relative_eq!(parsed.target_speed.unwrap(), 12.1);
+        let course = parsed.target_course.unwrap();
+        assert_relative_eq!(course.angle, 109.7);
+        assert_eq!(course.reference, TtmReference::Theoretical);
+        assert_relative_eq!(parsed.distance_of_cpa.unwrap(), 0.1);
+        assert_relative_eq!(parsed.time_to_cpa.unwrap(), 0.5);
+        assert_eq!(
+            parsed.speed_or_distance_unit,
+            Some(TtmDistanceUnit::NauticalMile)
+        );
+        assert_eq!(parsed.target_name.unwrap(), "TGT01");
+        assert_eq!(parsed.target_status, Some(TtmStatus::Tracking));
+        assert!(!parsed.is_target_reference);
+        assert_eq!(
+            parsed.time_of_data.unwrap(),
+            NaiveTime::from_hms_opt(10, 0, 21).unwrap()
+        );
+        assert_eq!(
+            parsed.type_of_acquisition,
+            Some(TtmTypeOfAcquisition::Automatic)
+        );
+    }
+
+    #[test]
+    fn test_generate_ttm_empty_roundtrip() {
+        let original = TtmData {
+            target_number: None,
+            target_distance: None,
+            bearing_from_own_ship: None,
+            target_speed: None,
+            target_course: None,
+            distance_of_cpa: None,
+            time_to_cpa: None,
+            speed_or_distance_unit: None,
+            target_name: None,
+            target_status: None,
+            is_target_reference: false,
+            time_of_data: None,
+            type_of_acquisition: None,
+        };
+        let mut buf = heapless::String::<256>::new();
+        crate::generate::generate_sentence("RA", &original, &mut buf).unwrap();
+
+        let s = parse_nmea_sentence(&buf).unwrap();
+        assert_eq!(s.checksum, s.calc_checksum());
+        let parsed = parse_ttm(s).unwrap();
+        assert_eq!(parsed, original);
     }
 }

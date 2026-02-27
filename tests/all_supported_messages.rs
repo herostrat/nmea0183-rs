@@ -11,6 +11,8 @@ fn test_all_supported_messages() {
         (SentenceType::ALM, "$GPALM,1,1,15,1159,00,441D,4E,16BE,FD5E,A10C9F,4A2DA4,686E81,58CBE1,0A4,001*77"),
         // APA
         (SentenceType::APA, "$GPAPA,A,A,0.10,R,N,V,V,011,M,DEST,011,M*42"),
+        // APB
+        (SentenceType::APB, "$GPAPB,A,A,0.10,R,N,V,V,011,M,DEST,011,M,011,M*3C"),
         // BOD
         (SentenceType::BOD, "$GPBOD,045.,T,023.,M,DEST,START*01"),
         // BWC
@@ -39,6 +41,8 @@ fn test_all_supported_messages() {
         (SentenceType::MTW, "$INMTW,17.9,C*1B"),
         // MWV
         (SentenceType::MWV, "$WIMWV,041.1,R,01.0,N,A*16"),
+        // RMB
+        (SentenceType::RMB, "$ECRMB,A,0.000,L,001,002,4653.550,N,07115.984,W,2.505,334.205,0.000,V*04"),
         // RMC
         (SentenceType::RMC, "$GPRMC,225446.33,A,4916.45,N,12311.12,W,000.5,054.7,191194,020.3,E,A*2B"),
         // RMZ
@@ -51,6 +55,10 @@ fn test_all_supported_messages() {
         (SentenceType::VHW, "$GPVHW,100.5,T,105.5,M,10.5,N,19.4,K*4F"),
         // VTG
         (SentenceType::VTG, "$GPVTG,360.0,T,348.7,M,000.0,N,000.0,K*43"),
+        // VWR
+        (SentenceType::VWR, "$IIVWR,75,R,1.0,N,0.51,M,1.85,K*6C"),
+        // VWT
+        (SentenceType::VWT, "$IIVWT,030.,R,10.1,N,05.2,M,018.7,K*75"),
         // WNC
         (SentenceType::WNC, "$GPWNC,200.00,N,370.40,K,Dest,Origin*58"),
         // ZDA
@@ -77,8 +85,12 @@ fn test_all_supported_messages() {
         (SentenceType::MWD, "$WIMWD,270.0,T,265.5,M,10.2,N,5.3,M*6E"),
         // ROT
         (SentenceType::ROT, "$TIROT,-0.3,A*15"),
+        // RPM
+        (SentenceType::RPM, "$IIRPM,E,1,2418.2,10.5,A*5F"),
         // RSA
         (SentenceType::RSA, "$IIRSA,10.5,A,,V*4D"),
+        // VDM
+        (SentenceType::VDM, "!AIVDM,1,1,,A,13aEOK?P00PD2wVMdLDRhgvL289?,0*26"),
         // VDR
         (SentenceType::VDR, "$IIVDR,180.0,T,175.5,M,1.5,N*32"),
         // VLW

@@ -144,6 +144,54 @@ fn do_parse_gns(i: &str) -> IResult<&str, GnsData> {
     ))
 }
 
+impl NavigationStatus {
+    fn to_nmea_char(self) -> char {
+        match self {
+            NavigationStatus::Safe => 'S',
+            NavigationStatus::Caution => 'C',
+            NavigationStatus::Unsafe => 'U',
+            NavigationStatus::NotValidForNavigation => 'V',
+        }
+    }
+}
+
+impl crate::generate::GenerateNmeaBody for GnsData {
+    fn sentence_type(&self) -> SentenceType {
+        SentenceType::GNS
+    }
+
+    fn write_body(&self, f: &mut dyn core::fmt::Write) -> core::fmt::Result {
+        use crate::sentences::gen_utils::*;
+
+        // 1: fix_time
+        write_hms(f, &self.fix_time)?;
+        f.write_str(",")?;
+        // 2-5: lat,N/S,lon,E/W
+        write_lat_lon(f, &self.lat, &self.lon)?;
+        f.write_str(",")?;
+        // 6: FAA mode indicator string
+        self.faa_modes.write_nmea(f)?;
+        f.write_str(",")?;
+        // 7: number of satellites
+        write!(f, "{}", self.nsattelites)?;
+        f.write_str(",")?;
+        // 8: HDOP
+        write_field(f, &self.hdop)?;
+        // 9: altitude
+        write_field(f, &self.alt)?;
+        // 10: geoid separation
+        write_field(f, &self.geoid_separation)?;
+        // 11: age of differential corrections (empty)
+        f.write_str(",")?;
+        // 12: differential reference station ID (empty)
+        if let Some(ns) = self.nav_status {
+            // 13: nav status (preceded by comma)
+            write!(f, ",{}", ns.to_nmea_char())?;
+        }
+        Ok(())
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use approx::assert_relative_eq;
@@ -168,5 +216,27 @@ mod tests {
         assert_relative_eq!(406.110, gns_data.alt.unwrap());
         assert_relative_eq!(-26.294, gns_data.geoid_separation.unwrap());
         assert_eq!(Some(NavigationStatus::Safe), gns_data.nav_status);
+    }
+
+    #[test]
+    fn test_generate_gns_roundtrip() {
+        // Parse a known-good sentence to get a valid GnsData (FaaModes fields are private)
+        let s = parse_nmea_sentence("$GPGNS,224749.00,3333.4268304,N,11153.3538273,W,D,19,0.6,406.110,-26.294,6.0,0138,S,*46").unwrap();
+        let original = parse_gns(s).unwrap();
+
+        let mut buf = heapless::String::<256>::new();
+        crate::generate::generate_sentence("GP", &original, &mut buf).unwrap();
+        let s2 = parse_nmea_sentence(&buf).unwrap();
+        assert_eq!(s2.checksum, s2.calc_checksum());
+        let parsed = parse_gns(s2).unwrap();
+        assert_eq!(parsed.fix_time, original.fix_time);
+        assert_relative_eq!(parsed.lat.unwrap(), original.lat.unwrap(), epsilon = 1e-5);
+        assert_relative_eq!(parsed.lon.unwrap(), original.lon.unwrap(), epsilon = 1e-5);
+        assert_eq!(parsed.faa_modes, original.faa_modes);
+        assert_eq!(parsed.nsattelites, original.nsattelites);
+        assert_relative_eq!(parsed.hdop.unwrap(), original.hdop.unwrap());
+        assert_relative_eq!(parsed.alt.unwrap(), original.alt.unwrap());
+        assert_relative_eq!(parsed.geoid_separation.unwrap(), original.geoid_separation.unwrap());
+        assert_eq!(parsed.nav_status, original.nav_status);
     }
 }

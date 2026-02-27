@@ -84,6 +84,35 @@ pub fn parse_wnc(sentence: NmeaSentence<'_>) -> Result<WncData, Error<'_>> {
     }
 }
 
+impl crate::generate::GenerateNmeaBody for WncData {
+    fn sentence_type(&self) -> SentenceType {
+        SentenceType::WNC
+    }
+
+    fn write_body(&self, f: &mut dyn core::fmt::Write) -> core::fmt::Result {
+        // 1. Distance, Nautical Miles
+        if let Some(v) = self.distance_nautical_miles {
+            write!(f, "{}", v)?;
+        }
+        f.write_str(",N,")?;
+        // 3. Distance, Kilometers
+        if let Some(v) = self.distance_kilometers {
+            write!(f, "{}", v)?;
+        }
+        f.write_str(",K,")?;
+        // 5. Waypoint ID, Destination
+        if let Some(ref wpt) = self.waypoint_id_destination {
+            f.write_str(wpt.as_str())?;
+        }
+        f.write_char(',')?;
+        // 6. Waypoint ID, Origin
+        if let Some(ref wpt) = self.waypoint_id_origin {
+            f.write_str(wpt.as_str())?;
+        }
+        Ok(())
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -107,5 +136,25 @@ mod tests {
         assert_relative_eq!(data.distance_kilometers.unwrap(), 370.40);
         assert_eq!(data.waypoint_id_destination.as_deref(), Some("Dest"));
         assert_eq!(data.waypoint_id_origin.as_deref(), Some("Origin"));
+    }
+
+    #[test]
+    fn test_generate_wnc_roundtrip() {
+        let original = WncData {
+            distance_nautical_miles: Some(200.0),
+            distance_kilometers: Some(370.4),
+            waypoint_id_destination: Some(ArrayString::from("Dest").unwrap()),
+            waypoint_id_origin: Some(ArrayString::from("Origin").unwrap()),
+        };
+        let mut buf = heapless::String::<128>::new();
+        crate::generate::generate_sentence("GP", &original, &mut buf).unwrap();
+
+        let s = parse_nmea_sentence(&buf).unwrap();
+        assert_eq!(s.checksum, s.calc_checksum());
+        let parsed = parse_wnc(s).unwrap();
+        assert_relative_eq!(parsed.distance_nautical_miles.unwrap(), 200.0);
+        assert_relative_eq!(parsed.distance_kilometers.unwrap(), 370.4);
+        assert_eq!(parsed.waypoint_id_destination.as_deref(), Some("Dest"));
+        assert_eq!(parsed.waypoint_id_origin.as_deref(), Some("Origin"));
     }
 }

@@ -74,6 +74,42 @@ pub fn parse_zfo(sentence: NmeaSentence<'_>) -> Result<ZfoData, Error<'_>> {
     }
 }
 
+/// Write a `Duration` in `hhmmss.ss` NMEA format.
+fn write_duration(f: &mut dyn core::fmt::Write, dur: &Option<Duration>) -> core::fmt::Result {
+    if let Some(d) = dur {
+        let total_millis = d.num_milliseconds();
+        let hours = total_millis / 3_600_000;
+        let minutes = (total_millis % 3_600_000) / 60_000;
+        let seconds = (total_millis % 60_000) / 1_000;
+        let centiseconds = (total_millis % 1_000) / 10;
+        write!(f, "{:02}{:02}{:02}", hours, minutes, seconds)?;
+        if centiseconds > 0 {
+            write!(f, ".{:02}", centiseconds)?;
+        }
+    }
+    Ok(())
+}
+
+impl crate::generate::GenerateNmeaBody for ZfoData {
+    fn sentence_type(&self) -> SentenceType {
+        SentenceType::ZFO
+    }
+
+    fn write_body(&self, f: &mut dyn core::fmt::Write) -> core::fmt::Result {
+        // 1. UTC Time
+        crate::sentences::gen_utils::write_hms(f, &self.fix_time)?;
+        f.write_char(',')?;
+        // 2. Elapsed Time (Duration)
+        write_duration(f, &self.fix_duration)?;
+        f.write_char(',')?;
+        // 3. Waypoint ID
+        if let Some(ref wpt) = self.waypoint_id {
+            f.write_str(wpt.as_str())?;
+        }
+        Ok(())
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -121,6 +157,29 @@ mod tests {
             },
             run_parse_zfo("$GPZFO,,042359.17,*49").unwrap()
         );
+    }
+
+    #[test]
+    fn test_generate_zfo_roundtrip() {
+        let original = ZfoData {
+            fix_time: NaiveTime::from_hms_milli_opt(14, 58, 32, 120),
+            fix_duration: Some(
+                Duration::hours(4)
+                    + Duration::minutes(23)
+                    + Duration::seconds(59)
+                    + Duration::milliseconds(170),
+            ),
+            waypoint_id: Some(ArrayString::from("WPT").unwrap()),
+        };
+        let mut buf = heapless::String::<128>::new();
+        crate::generate::generate_sentence("GP", &original, &mut buf).unwrap();
+
+        let s = parse_nmea_sentence(&buf).unwrap();
+        assert_eq!(s.checksum, s.calc_checksum());
+        let parsed = parse_zfo(s).unwrap();
+        assert_eq!(parsed.fix_time, original.fix_time);
+        assert_eq!(parsed.fix_duration, original.fix_duration);
+        assert_eq!(parsed.waypoint_id.as_deref(), Some("WPT"));
     }
 
     #[test]

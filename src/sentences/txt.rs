@@ -81,6 +81,16 @@ struct TxtData0<'a> {
     pub text: &'a str,
 }
 
+impl crate::generate::GenerateNmeaBody for TxtData {
+    fn sentence_type(&self) -> SentenceType {
+        SentenceType::TXT
+    }
+
+    fn write_body(&self, f: &mut dyn core::fmt::Write) -> core::fmt::Result {
+        write!(f, "{:02},{:02},{:02},{}", self.count, self.seq, self.text_ident, self.text.as_str())
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -114,5 +124,25 @@ mod tests {
             let s = parse_nmea_sentence(line).unwrap();
             parse_txt(s).unwrap();
         }
+    }
+
+    #[test]
+    fn test_generate_txt_roundtrip() {
+        let original = TxtData {
+            count: 1,
+            seq: 1,
+            text_ident: 2,
+            text: ArrayString::from("u-blox AG - www.u-blox.com").unwrap(),
+        };
+        let mut buf = heapless::String::<256>::new();
+        crate::generate::generate_sentence("GN", &original, &mut buf).unwrap();
+
+        let s = parse_nmea_sentence(&buf).unwrap();
+        assert_eq!(s.checksum, s.calc_checksum());
+        let parsed = parse_txt(s).unwrap();
+        assert_eq!(parsed.count, 1);
+        assert_eq!(parsed.seq, 1);
+        assert_eq!(parsed.text_ident, 2);
+        assert_eq!(parsed.text.as_str(), "u-blox AG - www.u-blox.com");
     }
 }

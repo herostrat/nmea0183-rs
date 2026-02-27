@@ -94,6 +94,35 @@ pub fn parse_bww(sentence: NmeaSentence<'_>) -> Result<BwwData, Error<'_>> {
     }
 }
 
+impl crate::generate::GenerateNmeaBody for BwwData {
+    fn sentence_type(&self) -> SentenceType {
+        SentenceType::BWW
+    }
+
+    fn write_body(&self, f: &mut dyn core::fmt::Write) -> core::fmt::Result {
+        // 1. Bearing, degrees True
+        if let Some(v) = self.true_bearing {
+            write!(f, "{}", v)?;
+        }
+        f.write_str(",T,")?;
+        // 3. Bearing, degrees Magnetic
+        if let Some(v) = self.magnetic_bearing {
+            write!(f, "{}", v)?;
+        }
+        f.write_str(",M,")?;
+        // 5. TO Waypoint ID
+        if let Some(ref wpt) = self.to_waypoint_id {
+            f.write_str(wpt.as_str())?;
+        }
+        f.write_char(',')?;
+        // 6. FROM Waypoint ID
+        if let Some(ref wpt) = self.from_waypoint_id {
+            f.write_str(wpt.as_str())?;
+        }
+        Ok(())
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use approx::assert_relative_eq;
@@ -171,5 +200,25 @@ mod tests {
                 parameter_length: 75
             }
         );
+    }
+
+    #[test]
+    fn test_generate_bww_roundtrip() {
+        let original = BwwData {
+            true_bearing: Some(213.8),
+            magnetic_bearing: Some(218.0),
+            to_waypoint_id: Some(ArrayString::from("TOWPT").unwrap()),
+            from_waypoint_id: Some(ArrayString::from("FROMWPT").unwrap()),
+        };
+        let mut buf = heapless::String::<128>::new();
+        crate::generate::generate_sentence("GP", &original, &mut buf).unwrap();
+
+        let s = parse_nmea_sentence(&buf).unwrap();
+        assert_eq!(s.checksum, s.calc_checksum());
+        let parsed = parse_bww(s).unwrap();
+        assert_relative_eq!(parsed.true_bearing.unwrap(), 213.8);
+        assert_relative_eq!(parsed.magnetic_bearing.unwrap(), 218.0);
+        assert_eq!(&parsed.to_waypoint_id.unwrap(), "TOWPT");
+        assert_eq!(&parsed.from_waypoint_id.unwrap(), "FROMWPT");
     }
 }

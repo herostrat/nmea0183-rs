@@ -95,6 +95,31 @@ fn do_parse_gll(i: &str) -> IResult<&str, GllData> {
     ))
 }
 
+impl crate::generate::GenerateNmeaBody for GllData {
+    fn sentence_type(&self) -> SentenceType {
+        SentenceType::GLL
+    }
+
+    fn write_body(&self, f: &mut dyn core::fmt::Write) -> core::fmt::Result {
+        use crate::sentences::gen_utils::*;
+
+        // 1-4: lat,N/S,lon,E/W
+        write_lat_lon(f, &self.latitude, &self.longitude)?;
+        f.write_str(",")?;
+        // 5: fix_time
+        write_hms(f, &self.fix_time)?;
+        f.write_str(",")?;
+        // 6: data status (A=valid, V=invalid)
+        f.write_str(if self.valid { "A" } else { "V" })?;
+        f.write_str(",")?;
+        // 7: FAA mode indicator
+        if let Some(mode) = self.faa_mode {
+            write!(f, "{}", mode.to_nmea_char())?;
+        }
+        Ok(())
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use approx::assert_relative_eq;
@@ -136,5 +161,43 @@ mod tests {
         let gll_data = parse_gll(s).unwrap();
         assert_eq!(gll_data.fix_time, None);
         assert!(!gll_data.valid);
+    }
+
+    #[test]
+    fn test_generate_gll_roundtrip() {
+        let original = GllData {
+            latitude: Some(51.0 + 7.0013414 / 60.0),
+            longitude: Some(-(114.0 + 2.3279144 / 60.0)),
+            fix_time: Some(NaiveTime::from_hms_milli_opt(20, 54, 12, 0).unwrap()),
+            valid: true,
+            faa_mode: Some(FaaMode::Autonomous),
+        };
+        let mut buf = heapless::String::<256>::new();
+        crate::generate::generate_sentence("GP", &original, &mut buf).unwrap();
+        let s = parse_nmea_sentence(&buf).unwrap();
+        assert_eq!(s.checksum, s.calc_checksum());
+        let parsed = parse_gll(s).unwrap();
+        assert_relative_eq!(parsed.latitude.unwrap(), original.latitude.unwrap(), epsilon = 1e-5);
+        assert_relative_eq!(parsed.longitude.unwrap(), original.longitude.unwrap(), epsilon = 1e-5);
+        assert_eq!(parsed.fix_time, original.fix_time);
+        assert_eq!(parsed.valid, original.valid);
+        assert_eq!(parsed.faa_mode, original.faa_mode);
+    }
+
+    #[test]
+    fn test_generate_gll_empty() {
+        let original = GllData {
+            latitude: None,
+            longitude: None,
+            fix_time: None,
+            valid: false,
+            faa_mode: Some(FaaMode::DataNotValid),
+        };
+        let mut buf = heapless::String::<256>::new();
+        crate::generate::generate_sentence("GN", &original, &mut buf).unwrap();
+        let s = parse_nmea_sentence(&buf).unwrap();
+        assert_eq!(s.checksum, s.calc_checksum());
+        let parsed = parse_gll(s).unwrap();
+        assert_eq!(parsed, original);
     }
 }

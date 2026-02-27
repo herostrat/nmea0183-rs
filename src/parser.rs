@@ -396,6 +396,13 @@ impl<'a> Nmea {
             | ParseResult::VLW(_)
             | ParseResult::VPW(_)
             | ParseResult::TTM(_)
+            | ParseResult::APB(_)
+            | ParseResult::RMB(_)
+            | ParseResult::RPM(_)
+            | ParseResult::VDM(_)
+            | ParseResult::VDO(_)
+            | ParseResult::VWR(_)
+            | ParseResult::VWT(_)
             | ParseResult::XTE(_)
             | ParseResult::ZDA(_)
             | ParseResult::ZFO(_)
@@ -1209,6 +1216,10 @@ define_sentence_type_enum! {
         ///
         /// Type: `Wind`
         VWR,
+        /// VWT - True Wind Speed and Angle
+        ///
+        /// Type: `Wind`
+        VWT,
         /// WCV - Waypoint Closure Velocity
         ///
         /// <https://gpsd.gitlab.io/gpsd/NMEA.html#_wcv_waypoint_closure_velocity>
