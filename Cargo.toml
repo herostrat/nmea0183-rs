@@ -84,11 +84,21 @@ GNSS = ["APA", "ALM", "GBS", "GGA", "GLL", "GNS", "GSA", "GST", "GSV", "RMC", "V
 ## Waypoint
 waypoint = ["AAM", "BOD", "BWC", "BWW", "WNC", "ZFO", "ZTG"]
 ## Maritime
-maritime = ["waypoint", "water", "radar"]
+maritime = ["waypoint", "water", "radar", "heading", "navigation", "wind", "equipment", "current"]
 ## Radar
 radar = ["TTM"]
 ## Water
-water = ["DBK", "DBS", "DPT", "MTW", "VHW"]
+water = ["DBK", "DBS", "DBT", "DPT", "MTW", "VHW", "VLW"]
+## Heading
+heading = ["HDG", "HDM", "HSC", "ROT"]
+## Navigation
+navigation = ["XTE"]
+## Wind
+wind = ["MWD", "VPW"]
+## Equipment
+equipment = ["RSA"]
+## Current
+current = ["VDR"]
 ## Vendor-specific messages
 vendor-specific = ["RMZ"]
 ## Other
@@ -128,6 +138,10 @@ DBK = []
 ## (feature: `water`)
 DBS = []
 
+## Depth Below Transducer
+## (feature: `water`)
+DBT = []
+
 ## Depth of Water
 ## (feature: `water`)
 DPT = []
@@ -160,9 +174,21 @@ GST = []
 ## (feature: `GNSS`)
 GSV = []
 
+## Heading - Deviation & Variation
+## (feature: `heading`)
+HDG = []
+
+## Heading - Magnetic
+## (feature: `heading`)
+HDM = []
+
 ## Heading - True
 ## (feature: `other`)
 HDT = []
+
+## Heading Steering Command
+## (feature: `heading`)
+HSC = []
 
 ## Meterological Composite
 ## (feature: `other`)
@@ -171,6 +197,10 @@ MDA = []
 ## Mean Temperature of Water
 ## (feature: `water`)
 MTW = []
+
+## Wind Direction & Speed
+## (feature: `wind`)
+MWD = []
 
 ## Wind Speed and Angle
 ## (feature: `other`)
@@ -184,6 +214,14 @@ RMC = []
 ## (feature: `vendor-specific`)
 RMZ = []
 
+## Rate Of Turn
+## (feature: `heading`)
+ROT = []
+
+## Rudder Sensor Angle
+## (feature: `equipment`)
+RSA = []
+
 ## Tracked target message
 ## (feature: `radar`)
 TTM = []
@@ -192,13 +230,29 @@ TTM = []
 ## (feature: `other`)
 TXT = []
 
+## Set and Drift
+## (feature: `current`)
+VDR = []
+
 ## Water speed and heading
 ## (feature: `water`)
 VHW = []
 
+## Distance Traveled through Water
+## (feature: `water`)
+VLW = []
+
+## Speed Measured Parallel to Wind
+## (feature: `wind`)
+VPW = []
+
 ## * Track made good and Ground speed
 ## (feature: `GNSS`)
 VTG = []
+
+## Cross-Track Error, Measured
+## (feature: `navigation`)
+XTE = []
 
 ## Distance - Waypoint to waypoint
 ## (feature: `waypoint`)
@@ -226,4 +280,8 @@ required-features = ["all-sentences"]
 
 [[test]]
 name = "functional_tests"
+required-features = ["all-sentences"]
+
+[[test]]
+name = "signalk_compat"
 required-features = ["all-sentences"]

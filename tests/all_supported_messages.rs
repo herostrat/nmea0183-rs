@@ -63,8 +63,30 @@ fn test_all_supported_messages() {
         (SentenceType::DBK, "$SDDBK,1330.5,f,0405.5,M,0221.6,F*2E"),
         // DBS
         (SentenceType::DBS, "$SDDBS,12.3,f,3.75,M,2.05,F*37"),
-        // DPT (Depth of Water)
+        // DBT
+        (SentenceType::DBT, "$SDDBT,12.3,f,3.75,M,2.05,F*30"),
+        // DPT
         (SentenceType::DPT, "$SDDPT,17.9,0.5*6D"),
+        // HDG
+        (SentenceType::HDG, "$HCHDG,98.3,0.0,E,12.6,W*57"),
+        // HDM
+        (SentenceType::HDM, "$HCHDM,238.9,M*29"),
+        // HSC
+        (SentenceType::HSC, "$GPHSC,128.5,T,135.2,M*5D"),
+        // MWD
+        (SentenceType::MWD, "$WIMWD,270.0,T,265.5,M,10.2,N,5.3,M*6E"),
+        // ROT
+        (SentenceType::ROT, "$TIROT,-0.3,A*15"),
+        // RSA
+        (SentenceType::RSA, "$IIRSA,10.5,A,,V*4D"),
+        // VDR
+        (SentenceType::VDR, "$IIVDR,180.0,T,175.5,M,1.5,N*32"),
+        // VLW
+        (SentenceType::VLW, "$VWVLW,7803.2,N,0.00,N*42"),
+        // VPW
+        (SentenceType::VPW, "$IIVPW,4.5,N,2.3,M*52"),
+        // XTE
+        (SentenceType::XTE, "$GPXTE,A,A,0.67,L,N*6F"),
     ]
     .into_iter()
     .collect::<HashMap<_, _>>();

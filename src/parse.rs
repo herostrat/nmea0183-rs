@@ -115,6 +115,7 @@ pub enum ParseResult {
     BWW(BwwData),
     DBK(DbkData),
     DBS(DbsData),
+    DBT(DbtData),
     DPT(DptData),
     GBS(GbsData),
     GGA(GgaData),
@@ -123,15 +124,25 @@ pub enum ParseResult {
     GSA(GsaData),
     GST(GstData),
     GSV(GsvData),
+    HDG(HdgData),
+    HDM(HdmData),
     HDT(HdtData),
+    HSC(HscData),
     MDA(MdaData),
     MTW(MtwData),
+    MWD(MwdData),
     MWV(MwvData),
     RMC(RmcData),
+    ROT(RotData),
+    RSA(RsaData),
     TTM(TtmData),
     TXT(TxtData),
+    VDR(VdrData),
     VHW(VhwData),
+    VLW(VlwData),
+    VPW(VpwData),
     VTG(VtgData),
+    XTE(XteData),
     WNC(WncData),
     ZDA(ZdaData),
     ZFO(ZfoData),
@@ -152,6 +163,7 @@ impl From<&ParseResult> for SentenceType {
             ParseResult::BWW(_) => SentenceType::BWW,
             ParseResult::DBK(_) => SentenceType::DBK,
             ParseResult::DBS(_) => SentenceType::DBS,
+            ParseResult::DBT(_) => SentenceType::DBT,
             ParseResult::GBS(_) => SentenceType::GBS,
             ParseResult::GGA(_) => SentenceType::GGA,
             ParseResult::GLL(_) => SentenceType::GLL,
@@ -159,15 +171,25 @@ impl From<&ParseResult> for SentenceType {
             ParseResult::GSA(_) => SentenceType::GSA,
             ParseResult::GST(_) => SentenceType::GST,
             ParseResult::GSV(_) => SentenceType::GSV,
+            ParseResult::HDG(_) => SentenceType::HDG,
+            ParseResult::HDM(_) => SentenceType::HDM,
             ParseResult::HDT(_) => SentenceType::HDT,
+            ParseResult::HSC(_) => SentenceType::HSC,
             ParseResult::MDA(_) => SentenceType::MDA,
             ParseResult::MTW(_) => SentenceType::MTW,
+            ParseResult::MWD(_) => SentenceType::MWD,
             ParseResult::MWV(_) => SentenceType::MWV,
             ParseResult::RMC(_) => SentenceType::RMC,
+            ParseResult::ROT(_) => SentenceType::ROT,
+            ParseResult::RSA(_) => SentenceType::RSA,
             ParseResult::TTM(_) => SentenceType::TTM,
             ParseResult::TXT(_) => SentenceType::TXT,
+            ParseResult::VDR(_) => SentenceType::VDR,
             ParseResult::VHW(_) => SentenceType::VHW,
+            ParseResult::VLW(_) => SentenceType::VLW,
+            ParseResult::VPW(_) => SentenceType::VPW,
             ParseResult::VTG(_) => SentenceType::VTG,
+            ParseResult::XTE(_) => SentenceType::XTE,
             ParseResult::WNC(_) => SentenceType::WNC,
             ParseResult::ZFO(_) => SentenceType::ZFO,
             ParseResult::ZTG(_) => SentenceType::ZTG,
@@ -281,6 +303,15 @@ pub fn parse_str(sentence_input: &str) -> Result<ParseResult, Error<'_>> {
                     }
                 }
             }
+            SentenceType::DBT => {
+                cfg_if! {
+                    if #[cfg(feature = "DBT")] {
+                        parse_dbt(nmea_sentence).map(Into::into)
+                    } else {
+                        return Err(Error::DisabledSentence);
+                    }
+                }
+            }
             SentenceType::GBS => {
                 cfg_if! {
                     if #[cfg(feature = "GBS")] {
@@ -344,10 +375,37 @@ pub fn parse_str(sentence_input: &str) -> Result<ParseResult, Error<'_>> {
                     }
                 }
             }
+            SentenceType::HDG => {
+                cfg_if! {
+                    if #[cfg(feature = "HDG")] {
+                        parse_hdg(nmea_sentence).map(Into::into)
+                    } else {
+                        return Err(Error::DisabledSentence);
+                    }
+                }
+            }
+            SentenceType::HDM => {
+                cfg_if! {
+                    if #[cfg(feature = "HDM")] {
+                        parse_hdm(nmea_sentence).map(Into::into)
+                    } else {
+                        return Err(Error::DisabledSentence);
+                    }
+                }
+            }
             SentenceType::HDT => {
                 cfg_if! {
                     if #[cfg(feature = "HDT")] {
                         parse_hdt(nmea_sentence).map(ParseResult::HDT)
+                    } else {
+                        return Err(Error::DisabledSentence);
+                    }
+                }
+            }
+            SentenceType::HSC => {
+                cfg_if! {
+                    if #[cfg(feature = "HSC")] {
+                        parse_hsc(nmea_sentence).map(Into::into)
                     } else {
                         return Err(Error::DisabledSentence);
                     }
@@ -366,6 +424,15 @@ pub fn parse_str(sentence_input: &str) -> Result<ParseResult, Error<'_>> {
                 cfg_if! {
                     if #[cfg(feature = "MTW")] {
                         parse_mtw(nmea_sentence).map(ParseResult::MTW)
+                    } else {
+                        return Err(Error::DisabledSentence);
+                    }
+                }
+            }
+            SentenceType::MWD => {
+                cfg_if! {
+                    if #[cfg(feature = "MWD")] {
+                        parse_mwd(nmea_sentence).map(Into::into)
                     } else {
                         return Err(Error::DisabledSentence);
                     }
@@ -398,6 +465,24 @@ pub fn parse_str(sentence_input: &str) -> Result<ParseResult, Error<'_>> {
                     }
                 }
             }
+            SentenceType::ROT => {
+                cfg_if! {
+                    if #[cfg(feature = "ROT")] {
+                        parse_rot(nmea_sentence).map(Into::into)
+                    } else {
+                        return Err(Error::DisabledSentence);
+                    }
+                }
+            }
+            SentenceType::RSA => {
+                cfg_if! {
+                    if #[cfg(feature = "RSA")] {
+                        parse_rsa(nmea_sentence).map(Into::into)
+                    } else {
+                        return Err(Error::DisabledSentence);
+                    }
+                }
+            }
             SentenceType::TTM => {
                 cfg_if! {
                     if #[cfg(feature = "TTM")] {
@@ -416,10 +501,37 @@ pub fn parse_str(sentence_input: &str) -> Result<ParseResult, Error<'_>> {
                     }
                 }
             }
+            SentenceType::VDR => {
+                cfg_if! {
+                    if #[cfg(feature = "VDR")] {
+                        parse_vdr(nmea_sentence).map(Into::into)
+                    } else {
+                        return Err(Error::DisabledSentence);
+                    }
+                }
+            }
             SentenceType::VHW => {
                 cfg_if! {
                     if #[cfg(feature = "VHW")] {
                         parse_vhw(nmea_sentence).map(ParseResult::VHW)
+                    } else {
+                        return Err(Error::DisabledSentence);
+                    }
+                }
+            }
+            SentenceType::VLW => {
+                cfg_if! {
+                    if #[cfg(feature = "VLW")] {
+                        parse_vlw(nmea_sentence).map(Into::into)
+                    } else {
+                        return Err(Error::DisabledSentence);
+                    }
+                }
+            }
+            SentenceType::VPW => {
+                cfg_if! {
+                    if #[cfg(feature = "VPW")] {
+                        parse_vpw(nmea_sentence).map(Into::into)
                     } else {
                         return Err(Error::DisabledSentence);
                     }
@@ -474,6 +586,15 @@ pub fn parse_str(sentence_input: &str) -> Result<ParseResult, Error<'_>> {
                 cfg_if! {
                     if #[cfg(feature = "DPT")] {
                         parse_dpt(nmea_sentence).map(ParseResult::DPT)
+                    } else {
+                        return Err(Error::DisabledSentence);
+                    }
+                }
+            }
+            SentenceType::XTE => {
+                cfg_if! {
+                    if #[cfg(feature = "XTE")] {
+                        parse_xte(nmea_sentence).map(Into::into)
                     } else {
                         return Err(Error::DisabledSentence);
                     }

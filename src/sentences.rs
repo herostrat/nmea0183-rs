@@ -8,6 +8,7 @@ pub mod bwc;
 pub mod bww;
 pub mod dbk;
 pub mod dbs;
+pub mod dbt;
 pub mod dpt;
 pub mod gbs;
 pub mod gga;
@@ -16,17 +17,27 @@ pub mod gns;
 pub mod gsa;
 pub mod gst;
 pub mod gsv;
+pub mod hdg;
+pub mod hdm;
 pub mod hdt;
+pub mod hsc;
 pub mod mda;
 pub mod mtw;
+pub mod mwd;
 pub mod mwv;
 pub mod rmc;
 pub mod rmz;
+pub mod rot;
+pub mod rsa;
 pub mod ttm;
 pub mod txt;
 pub mod utils;
+pub mod vdr;
 pub mod vhw;
+pub mod vlw;
+pub mod vpw;
 pub mod vtg;
+pub mod xte;
 pub mod wnc;
 pub mod zda;
 pub mod zfo;
@@ -47,6 +58,7 @@ pub use {
     bww::{BwwData, parse_bww},
     dbk::{DbkData, parse_dbk},
     dbs::{DbsData, parse_dbs},
+    dbt::{DbtData, parse_dbt},
     dpt::{DptData, parse_dpt},
     faa_mode::{FaaMode, FaaModes},
     fix_type::FixType,
@@ -58,19 +70,29 @@ pub use {
     gsa::{GsaData, parse_gsa},
     gst::{GstData, parse_gst},
     gsv::{GsvData, parse_gsv},
+    hdg::{HdgData, parse_hdg},
+    hdm::{HdmData, parse_hdm},
     hdt::{HdtData, parse_hdt},
+    hsc::{HscData, parse_hsc},
     mda::{MdaData, parse_mda},
     mtw::{MtwData, parse_mtw},
+    mwd::{MwdData, parse_mwd},
     mwv::{MwvData, parse_mwv},
     rmc::{RmcData, parse_rmc},
     rmz::{PgrmzData, parse_pgrmz},
+    rot::{RotData, parse_rot},
+    rsa::{RsaData, parse_rsa},
     ttm::{
         TtmAngle, TtmData, TtmDistanceUnit, TtmReference, TtmStatus, TtmTypeOfAcquisition,
         parse_ttm,
     },
     txt::{TxtData, parse_txt},
+    vdr::{VdrData, parse_vdr},
     vhw::{VhwData, parse_vhw},
+    vlw::{VlwData, parse_vlw},
+    vpw::{VpwData, parse_vpw},
     vtg::{VtgData, parse_vtg},
+    xte::{XteData, parse_xte},
     wnc::{WncData, parse_wnc},
     zda::{ZdaData, parse_zda},
     zfo::{ZfoData, parse_zfo},
