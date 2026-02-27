@@ -1,4 +1,4 @@
-//! ## NMEA 0183 parser
+//! ## NMEA 0183 parser and generator
 //!
 //! Use [`Nmea::parse()`] and [`Nmea::parse_for_fix()`]
 //! to preserve state between receiving new NMEA sentences
@@ -6,6 +6,9 @@
 //!
 //! For embedded platforms, i.e. `no_std`, use [`parse_str()`] or [`parse_bytes()`]
 //! to parse sentences without preserving state.
+//!
+//! Use [`generate::generate_sentence()`] to serialize data structs back into
+//! valid NMEA sentences with correct checksums.
 //!
 //! Units used: **celsius**, **degrees**, **knots**, **meters** for altitude.
 //!

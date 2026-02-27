@@ -15,7 +15,7 @@ authors = [
 
 categories = ["parser-implementations", "no-std", "embedded"]
 keywords = ["NMEA", "gps", "glonass", "coordinate", "position"]
-description = "Simple NMEA 0183 parser"
+description = "NMEA 0183 sentence parser and generator"
 license = "Apache-2.0"
 documentation = "https://docs.rs/nmea"
 repository = "https://github.com/AeroRust/nmea"

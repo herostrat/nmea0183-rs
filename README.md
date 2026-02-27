@@ -6,19 +6,22 @@
 
 [Complete documentation can be found on www.docs.rs/nmea][doc]
 
-## NMEA 0183 sentence parser
+## NMEA 0183 sentence parser and generator
+
+Supports parsing and generating 47 sentence types across GNSS, navigation, water/depth, wind, heading, equipment, radar and AIS categories.
 
 Supported sentences (alphabetically ordered):
-
 
 - `AAM` - Waypoint Arrival Alarm (feature: `waypoint`)
 - `ALM` - GPS Almanac Data (feature: `GNSS`)
 - `APA` - Autopilot Sentence "A" (feature: `GNSS`)
+- `APB` - Autopilot Sentence "B" (feature: `navigation`)
 - `BOD` - Bearing - Waypoint to Waypoint (feature: `waypoint`)
 - `BWC` - Bearing & Distance to Waypoint - Great Circle (feature: `waypoint`)
 - `BWW` - Bearing - Waypoint to Waypoint (feature: `waypoint`)
 - `DBK` - Depth Below Keel (feature: `water`)
 - `DBS` - Depth Below Surface (feature: `water`)
+- `DBT` - Depth Below Transducer (feature: `water`)
 - `DPT` - Depth of Water (feature: `water`)
 - `GBS` - GPS Satellite Fault Detection (feature: `GNSS`)
 - `GGA` - * Global Positioning System Fix Data (feature: `GNSS`)
@@ -27,17 +30,32 @@ Supported sentences (alphabetically ordered):
 - `GSA` - * GPS DOP and active satellites (feature: `GNSS`)
 - `GST` - GPS Pseudorange Noise Statistics (feature: `GNSS`)
 - `GSV` - * Satellites in view (feature: `GNSS`)
+- `HDG` - Heading - Deviation & Variation (feature: `heading`)
+- `HDM` - Heading - Magnetic (feature: `heading`)
 - `HDT` - Heading - True (feature: `other`)
-- `MDA` - Meterological Composite (feature: `other`)
+- `HSC` - Heading Steering Command (feature: `heading`)
+- `MDA` - Meteorological Composite (feature: `other`)
 - `MTW` - Mean Temperature of Water (feature: `water`)
+- `MWD` - Wind Direction & Speed (feature: `wind`)
 - `MWV` - Wind Speed and Angle (feature: `other`)
+- `RMB` - Recommended Minimum Navigation Information (feature: `navigation`)
 - `RMC` - * Recommended Minimum Navigation Information (feature: `GNSS`)
 - `RMZ` - PGRMZ - Garmin Altitude (feature: `vendor-specific`)
+- `ROT` - Rate Of Turn (feature: `heading`)
+- `RPM` - Revolutions (feature: `equipment`)
+- `RSA` - Rudder Sensor Angle (feature: `equipment`)
 - `TTM` - Tracked target message (feature: `radar`)
 - `TXT` - * Text message (feature: `other`)
+- `VDM` - AIS VHF Data-Link Message (feature: `ais`)
+- `VDR` - Set and Drift (feature: `current`)
 - `VHW` - Water speed and heading (feature: `water`)
+- `VLW` - Distance Traveled through Water (feature: `water`)
+- `VPW` - Speed Measured Parallel to Wind (feature: `wind`)
 - `VTG` - * Track made good and Ground speed (feature: `GNSS`)
+- `VWR` - Relative Wind Speed and Angle (feature: `wind`)
+- `VWT` - True Wind Speed and Angle (feature: `wind`)
 - `WNC` - Distance - Waypoint to waypoint (feature: `waypoint`)
+- `XTE` - Cross-Track Error, Measured (feature: `navigation`)
 - `ZDA` - Time & Date - UTC, day, month, year and local time zone (feature: `other`)
 - `ZFO` - UTC & Time from origin Waypoint (feature: `waypoint`)
 - `ZTG` - UTC & Time to Destination Waypoint (feature: `waypoint`)
@@ -111,6 +129,22 @@ fn main() {
         nmea.parse(gga).unwrap();
         println!("{}", nmea);
     }
+}
+```
+
+### Generate
+
+All sentence data types implement `GenerateNmeaBody`, enabling roundtrip parsing and generation with correct checksum calculation:
+
+```rust
+use nmea::generate::generate_sentence;
+use nmea::sentences::HdtData;
+
+fn main() {
+    let data = HdtData { heading: Some(274.07) };
+    let mut buf = String::new();
+    generate_sentence("GP", &data, &mut buf).unwrap();
+    assert_eq!(buf, "$GPHDT,274.07,T*03");
 }
 ```
 
