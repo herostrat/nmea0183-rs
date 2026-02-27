@@ -1,0 +1,26 @@
+# Invalid NMEA sentences for error handling tests
+# Each line is an invalid sentence with a comment explaining why
+
+# Bad checksums
+$GPHDT,274.07,T*FF
+$GPGGA,133605.0,5521.75946,N,03731.93769,E,0,00,,,M,,M,,*00
+$GPRMC,225446.33,A,4916.45,N,12311.12,W,000.5,054.7,191194,020.3,E,A*99
+
+# Missing checksum / truncated
+$GPHDT,274.07,T
+$GPGGA,133605.0,5521.75946,N,03731.93769,E
+$GPRMC,225446.33,A
+
+# Missing prefix
+GPHDT,274.07,T*03
+HDT,274.07,T*03
+
+# Unknown sentence type
+$GPXYZ,1,2,3*00
+$GPZZZ,,,*00
+
+# Empty / garbage
+$*00
+
+# Overlength (>102 chars)
+$GPGGA,133605.0,5521.75946,N,03731.93769,E,0,00,99.99,99999.999,M,99999.999,M,99.9,9999,EXTRA_PADDING*FF

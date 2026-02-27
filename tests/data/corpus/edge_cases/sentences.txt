@@ -1,0 +1,26 @@
+# Edge case NMEA sentences
+# These test boundary conditions and unusual but valid inputs
+
+# All empty fields
+$SDDPT,,,*6C
+$SDHDG,,,,,*70
+$FTHSC,,,,*4A
+$RAMTW,,C*1E
+$GPZDA,,,,,,*48
+
+# Maximum precision values
+$GPHDT,359.999,T*08
+
+# Zero values
+$GPHDT,0.0,T*07
+$SDDPT,0.0,0.0*60
+$IIVHW,0.0,T,0.0,M,0.0,N,0.0,K*6C
+
+# Numeric talker IDs
+$04HDM,186.5,M*2C
+
+# Short waypoint IDs
+$GPAAM,A,A,0.10,N,A*14
+
+# Sentences at exactly 82 chars (NMEA spec limit including $...\r\n)
+# Some receivers emit up to 102 chars which our parser accepts

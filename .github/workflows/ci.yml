@@ -77,6 +77,19 @@ jobs:
         if: ${{ matrix.os != 'windows-latest' }}
         run: cargo test -F defmt
 
+      - name: Test feature groups (individual)
+        run: |
+          cargo test --no-default-features -F GNSS
+          cargo test --no-default-features -F waypoint
+          cargo test --no-default-features -F water
+          cargo test --no-default-features -F heading
+          cargo test --no-default-features -F navigation
+          cargo test --no-default-features -F wind
+          cargo test --no-default-features -F equipment
+          cargo test --no-default-features -F current
+          cargo test --no-default-features -F ais
+          cargo test --no-default-features -F maritime
+
       - name: Test (Release)
         run: cargo test --release --no-default-features
 

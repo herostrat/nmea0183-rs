@@ -12,11 +12,11 @@ mod helpers;
 
 #[test]
 fn test_parse_file_log() {
-    let res = process_file(&Path::new("tests").join("data").join("nmea1.log"))
+    let res = process_file(&Path::new("tests").join("data").join("logs").join("nmea1.log"))
         .unwrap_or_else(|err| panic!("process file failed with error '{}'", err));
 
     let expected: Vec<_> = BufReader::new(
-        File::open(Path::new("tests").join("data").join("nmea1.log.expected")).unwrap(),
+        File::open(Path::new("tests").join("data").join("logs").join("nmea1.log.expected")).unwrap(),
     )
     .lines()
     .collect::<Result<_, _>>()
@@ -28,7 +28,7 @@ fn test_parse_file_log() {
 #[test]
 fn test_parse_issue_2() {
     let mut input =
-        BufReader::new(File::open(Path::new("tests").join("data").join("nmea2.log")).unwrap());
+        BufReader::new(File::open(Path::new("tests").join("data").join("logs").join("nmea2.log")).unwrap());
     let mut nmea = Nmea::default();
     for _ in 0..100 {
         let mut buffer = String::new();
@@ -50,9 +50,10 @@ fn test_parse_all_logs() {
     for (i, log_path) in [
         Path::new("tests")
             .join("data")
+            .join("logs")
             .join("nmea_with_sat_info.log"),
-        Path::new("tests").join("data").join("nmea1.log"),
-        Path::new("tests").join("data").join("nmea2.log"),
+        Path::new("tests").join("data").join("logs").join("nmea1.log"),
+        Path::new("tests").join("data").join("logs").join("nmea2.log"),
     ]
     .iter()
     .enumerate()

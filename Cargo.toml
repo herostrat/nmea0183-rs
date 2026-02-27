@@ -311,3 +311,11 @@ required-features = ["all-sentences"]
 [[test]]
 name = "signalk_compat"
 required-features = ["all-sentences"]
+
+[[test]]
+name = "conformance_tests"
+required-features = ["all-sentences"]
+
+[[test]]
+name = "serialization_tests"
+required-features = ["all-sentences"]

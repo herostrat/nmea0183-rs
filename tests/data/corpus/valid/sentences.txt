@@ -1,0 +1,173 @@
+# Valid NMEA sentences - at least 2 variants per supported sentence type
+# Used as a corpus for conformance/fuzz testing
+
+# AAM - Waypoint Arrival Alarm
+$GPAAM,A,A,0.10,N,WPTNME*32
+$GPAAM,V,V,1.50,N,DEST01*0A
+
+# ALM - GPS Almanac Data
+$GPALM,1,1,15,1159,00,441D,4E,16BE,FD5E,A10C9F,4A2DA4,686E81,58CBE1,0A4,001*77
+
+# APA - Autopilot Sentence "A"
+$GPAPA,A,A,0.10,R,N,V,V,011,M,DEST,011,M*42
+$GPAPA,A,A,0.50,L,N,V,V,180,T,WPT01,180,T*16
+
+# APB - Autopilot Sentence "B"
+$GPAPB,A,A,0.10,R,N,V,V,011,M,DEST,011,M,011,M*3C
+$GPAPB,A,A,0.50,L,N,V,V,180,T,WPT01,180,T,180,T*48
+
+# BOD - Bearing Origin to Destination
+$GPBOD,097.0,T,103.2,M,POINTB,POINTA*4A
+$GPBOD,045.,T,023.,M,DEST,START*01
+
+# BWC - Bearing & Distance to Waypoint (Great Circle)
+$GPBWC,220516,5130.02,N,00046.34,W,213.8,T,218.0,M,0004.6,N,EGLM*21
+$IIBWC,200321,,,,,119.5,T,129.5,M,22.10,N,1*1E
+
+# BWW - Bearing Waypoint to Waypoint
+$GPBWW,213.8,T,218.0,M,TOWPT,FROMWPT*42
+
+# DBK - Depth Below Keel
+$SDDBK,1330.5,f,0405.5,M,0221.6,F*2E
+$IIDBK,035.53,f,010.83,M,005.85,F*3C
+
+# DBS - Depth Below Surface
+$SDDBS,12.3,f,3.75,M,2.05,F*37
+$IIDBS,035.53,f,010.83,M,005.85,F*24
+
+# DBT - Depth Below Transducer
+$SDDBT,12.3,f,3.75,M,2.05,F*30
+$IIDBT,035.53,f,010.83,M,005.85,F*23
+$IIDBT,432.8,f,,M,,F*1C
+
+# DPT - Depth of Water
+$SDDPT,17.9,0.5*6D
+$IIDPT,4.1,0.0*45
+$IIDPT,4.1,1.0*44
+
+# GBS - GPS Satellite Fault Detection
+$GPGBS,182141.000,15.5,15.3,7.2,21,0.9,0.5,0.8*54
+
+# GGA - Global Positioning System Fix Data
+$GPGGA,133605.0,5521.75946,N,03731.93769,E,0,00,,,M,,M,,*4F
+$GPGGA,172814.0,3723.46587704,N,12202.26957864,W,2,6,1.2,18.893,M,-25.669,M,2.0,0031*4F
+
+# GLL - Geographic Position
+$GPGLL,5107.0013414,N,11402.3279144,W,205412.00,A,A*73
+$GPGLL,5958.613,N,02325.928,E,121022,A,D*40
+
+# GNS - Fix Data
+$GPGNS,224749.00,3333.4268304,N,11153.3538273,W,D,19,0.6,406.110,-26.294,6.0,0138,S,*46
+
+# GSA - GPS DOP and Active Satellites
+$GPGSA,A,3,23,31,22,16,03,07,,,,,,,1.8,1.1,1.4*3E
+
+# GST - GPS Pseudorange Noise Statistics
+$GPGST,182141.000,15.5,15.3,7.2,21.8,0.9,0.5,0.8*54
+
+# GSV - Satellites in View
+$GPGSV,3,1,12,01,49,196,41,03,71,278,32,06,02,323,27,11,21,196,39*72
+$GPGSV,3,1,09,07,16,321,37,08,29,281,33,10,29,143,35,16,75,216,35,0*6E
+
+# HDG - Heading, Deviation & Variation
+$HCHDG,98.3,0.0,E,12.6,W*57
+$SDHDG,181.9,,,0.6,E*32
+
+# HDM - Heading Magnetic
+$HCHDM,238.9,M*29
+$04HDM,186.5,M*2C
+
+# HDT - Heading True
+$GPHDT,274.07,T*03
+$GPHDT,123.456,T*32
+
+# HSC - Heading Steering Command
+$GPHSC,128.5,T,135.2,M*5D
+$FTHSC,40.12,T,39.11,M*5E
+
+# MDA - Meteorological Composite
+$WIMDA,29.7544,I,1.0076,B,35.5,C,,,42.1,,20.6,C,116.4,T,107.7,M,1.2,N,0.6,M*66
+
+# MTW - Mean Temperature of Water
+$INMTW,17.9,C*1B
+$YXMTW,15.2,C*14
+
+# MWD - Wind Direction & Speed
+$WIMWD,270.0,T,265.5,M,10.2,N,5.3,M*6E
+$IIMWD,,,046.,M,10.1,N,05.2,M*0B
+
+# MWV - Wind Speed and Angle
+$WIMWV,041.1,R,01.0,N,A*16
+$IIMWV,074,T,05.85,N,A*2E
+
+# RMB - Recommended Minimum Navigation Information
+$ECRMB,A,0.000,L,001,002,4653.550,N,07115.984,W,2.505,334.205,0.000,V*04
+
+# RMC - Recommended Minimum Navigation Information
+$GPRMC,225446.33,A,4916.45,N,12311.12,W,000.5,054.7,191194,020.3,E,A*2B
+$GPRMC,085412.000,A,5222.3198,N,00454.5784,E,0.58,251.34,030414,,,A*65
+
+# RMZ - Garmin Altitude (Vendor specific)
+$PGRMZ,2282,f,3*21
+
+# ROT - Rate of Turn
+$TIROT,-0.3,A*15
+$GPROT,35.6,A*01
+
+# RPM - Revolutions
+$IIRPM,E,1,2418.2,10.5,A*5F
+
+# RSA - Rudder Sensor Angle
+$IIRSA,10.5,A,,V*4D
+
+# TTM - Tracked Target Message
+$RATTM,01,0.2,190.8,T,12.1,109.7,T,0.1,0.5,N,TGT01,T,,100021.00,A*79
+
+# TXT - Text Message
+$GNTXT,01,01,02,u-blox AG - www.u-blox.com*4E
+
+# VDM - AIS VHF Data-Link Message
+!AIVDM,1,1,,A,13aEOK?P00PD2wVMdLDRhgvL289?,0*26
+!AIVDM,2,1,3,B,55?MbV02>H97ac<H4eETo@T4@Dn2222220j1p61F220l4i@Dh0,0*28
+
+# VDR - Set and Drift
+$IIVDR,180.0,T,175.5,M,1.5,N*32
+$IIVDR,10.1,T,12.3,M,1.2,N*3A
+
+# VHW - Water Speed and Heading
+$GPVHW,100.5,T,105.5,M,10.5,N,19.4,K*4F
+$IIVHW,,T,,M,06.12,N,11.33,K*50
+
+# VLW - Distance Traveled through Water
+$VWVLW,7803.2,N,0.00,N*42
+$IIVLW,10.1,N,3.2,N*7C
+
+# VPW - Speed Measured Parallel to Wind
+$IIVPW,4.5,N,2.3,M*52
+$IIVPW,4.5,N,6.7,M*52
+
+# VTG - Track Made Good and Ground Speed
+$GPVTG,360.0,T,348.7,M,000.0,N,000.0,K*43
+$GPVTG,0.0,T,359.3,M,0.0,N,0.0,K,A*2F
+
+# VWR - Relative Wind Speed and Angle
+$IIVWR,75,R,1.0,N,0.51,M,1.85,K*6C
+
+# VWT - True Wind Speed and Angle
+$IIVWT,030.,R,10.1,N,05.2,M,018.7,K*75
+
+# WNC - Distance Waypoint to Waypoint
+$GPWNC,200.00,N,370.40,K,Dest,Origin*58
+
+# XTE - Cross-Track Error
+$GPXTE,A,A,0.67,L,N*6F
+
+# ZDA - Time & Date
+$GPZDA,160012.71,11,03,2004,-1,00*7D
+$IIZDA,085400,22,07,2021,,*50
+
+# ZFO - UTC & Time from Origin Waypoint
+$GPZFO,145832.12,042359.17,WPT*3E
+
+# ZTG - UTC & Time to Destination Waypoint
+$GPZTG,145832.12,042359.17,WPT*24
