@@ -1,12 +1,15 @@
 use chrono::NaiveTime;
 use nom::{
-    IResult, Parser as _, character::complete::char, combinator::opt, number::complete::float,
+    IResult, Parser as _,
+    character::complete::char,
+    combinator::opt,
+    number::complete::{double, float},
 };
 
 use crate::{
     Error, SentenceType,
     parse::NmeaSentence,
-    sentences::utils::{number, parse_hms, parse_lat_lon},
+    sentences::utils::{number, parse_hms},
 };
 
 /// GBS - GPS Satellite Fault Detection
@@ -46,8 +49,11 @@ fn do_parse_gbs(i: &str) -> IResult<&str, GbsData> {
     let (i, _) = char(',').parse(i)?;
 
     // 2. Expected 1-sigma error in latitude (meters)
+    let (i, lat_error) = opt(double).parse(i)?;
+    let (i, _) = char(',').parse(i)?;
+
     // 3. Expected 1-sigma error in longitude (meters)
-    let (i, lat_lon_errors) = parse_lat_lon(i)?;
+    let (i, lon_error) = opt(double).parse(i)?;
     let (i, _) = char(',').parse(i)?;
 
     // 4. Expected 1-sigma error in altitude (meters)
@@ -73,8 +79,8 @@ fn do_parse_gbs(i: &str) -> IResult<&str, GbsData> {
         i,
         GbsData {
             time,
-            lat_error: lat_lon_errors.map(|(lat, _lon)| lat),
-            lon_error: lat_lon_errors.map(|(_lat, lon)| lon),
+            lat_error,
+            lon_error,
             alt_error,
             most_likely_failed_sat,
             missed_probability,
@@ -84,7 +90,7 @@ fn do_parse_gbs(i: &str) -> IResult<&str, GbsData> {
     ))
 }
 
-/// # Parse BOD message
+/// # Parse GBS message
 ///
 /// See: <https://gpsd.gitlab.io/gpsd/NMEA.html#_gbs_gps_satellite_fault_detection>
 pub fn parse_gbs(sentence: NmeaSentence<'_>) -> Result<GbsData, Error<'_>> {

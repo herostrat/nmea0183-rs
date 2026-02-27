@@ -80,6 +80,27 @@ fn do_parse_dbs(i: &str) -> Result<DbsData, Error<'_>> {
     })
 }
 
+impl crate::generate::GenerateNmeaBody for DbsData {
+    fn sentence_type(&self) -> SentenceType {
+        SentenceType::DBS
+    }
+
+    fn write_body(&self, f: &mut dyn core::fmt::Write) -> core::fmt::Result {
+        if let Some(v) = self.water_depth_feet {
+            write!(f, "{}", v)?;
+        }
+        f.write_str(",f,")?;
+        if let Some(v) = self.water_depth_meters {
+            write!(f, "{}", v)?;
+        }
+        f.write_str(",M,")?;
+        if let Some(v) = self.water_depth_fathoms {
+            write!(f, "{}", v)?;
+        }
+        f.write_str(",F")
+    }
+}
+
 #[cfg(test)]
 mod test {
     use approx::assert_relative_eq;
@@ -101,5 +122,23 @@ mod test {
         let sentence = parse_nmea_sentence("$SDDBS,,,M,F*68").unwrap();
         let result = parse_dbs(sentence);
         assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_generate_dbs_roundtrip() {
+        let original = DbsData {
+            water_depth_feet: Some(45.0),
+            water_depth_meters: Some(13.7),
+            water_depth_fathoms: Some(7.5),
+        };
+        let mut buf = heapless::String::<128>::new();
+        crate::generate::generate_sentence("SD", &original, &mut buf).unwrap();
+
+        let sentence = parse_nmea_sentence(&buf).unwrap();
+        assert_eq!(sentence.checksum, sentence.calc_checksum());
+        let parsed = parse_dbs(sentence).unwrap();
+        assert_relative_eq!(parsed.water_depth_feet.unwrap(), 45.0);
+        assert_relative_eq!(parsed.water_depth_meters.unwrap(), 13.7);
+        assert_relative_eq!(parsed.water_depth_fathoms.unwrap(), 7.5);
     }
 }

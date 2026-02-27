@@ -23,6 +23,22 @@ impl FixType {
             FixType::DGps | FixType::Gps | FixType::Rtk | FixType::FloatRtk | FixType::Pps => true,
         }
     }
+
+    /// Convert to the single-character NMEA representation.
+    #[inline]
+    pub fn to_nmea_char(self) -> char {
+        match self {
+            FixType::Invalid => '0',
+            FixType::Gps => '1',
+            FixType::DGps => '2',
+            FixType::Pps => '3',
+            FixType::Rtk => '4',
+            FixType::FloatRtk => '5',
+            FixType::Estimated => '6',
+            FixType::Manual => '7',
+            FixType::Simulation => '8',
+        }
+    }
 }
 
 impl From<char> for FixType {

@@ -34,6 +34,7 @@ pub mod ztg;
 
 pub mod faa_mode;
 pub mod fix_type;
+pub mod gen_utils;
 pub mod gnss_type;
 
 #[doc(inline)]

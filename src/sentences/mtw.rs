@@ -71,6 +71,19 @@ fn do_parse_mtw(i: &str) -> IResult<&str, MtwData> {
     ))
 }
 
+impl crate::generate::GenerateNmeaBody for MtwData {
+    fn sentence_type(&self) -> SentenceType {
+        SentenceType::MTW
+    }
+
+    fn write_body(&self, f: &mut dyn core::fmt::Write) -> core::fmt::Result {
+        if let Some(t) = self.temperature {
+            write!(f, "{}", t)?;
+        }
+        f.write_str(",C")
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -99,5 +112,19 @@ mod tests {
         assert_eq!(s.checksum, s.calc_checksum());
         assert_eq!(s.checksum, 0x65);
         assert!(parse_mtw(s).is_err());
+    }
+
+    #[test]
+    fn test_generate_mtw_roundtrip() {
+        let original = MtwData {
+            temperature: Some(17.9),
+        };
+        let mut buf = heapless::String::<128>::new();
+        crate::generate::generate_sentence("IN", &original, &mut buf).unwrap();
+
+        let s = parse_nmea_sentence(&buf).unwrap();
+        assert_eq!(s.checksum, s.calc_checksum());
+        let parsed = parse_mtw(s).unwrap();
+        assert_eq!(parsed.temperature, Some(17.9));
     }
 }

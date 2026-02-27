@@ -272,6 +272,15 @@ pub fn parse_str(sentence_input: &str) -> Result<ParseResult, Error<'_>> {
                     }
                 }
             }
+            SentenceType::DBS => {
+                cfg_if! {
+                    if #[cfg(feature = "DBS")] {
+                        parse_dbs(nmea_sentence).map(Into::into)
+                    } else {
+                        return Err(Error::DisabledSentence);
+                    }
+                }
+            }
             SentenceType::GBS => {
                 cfg_if! {
                     if #[cfg(feature = "GBS")] {

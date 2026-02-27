@@ -11,10 +11,14 @@ fn test_all_supported_messages() {
         (SentenceType::ALM, "$GPALM,1,1,15,1159,00,441D,4E,16BE,FD5E,A10C9F,4A2DA4,686E81,58CBE1,0A4,001*77"),
         // APA
         (SentenceType::APA, "$GPAPA,A,A,0.10,R,N,V,V,011,M,DEST,011,M*42"),
+        // BOD
+        (SentenceType::BOD, "$GPBOD,045.,T,023.,M,DEST,START*01"),
         // BWC
         (SentenceType::BWC, "$GPBWC,220516,5130.02,N,00046.34,W,213.8,T,218.0,M,0004.6,N,EGLM*21"),
         // BWW
         (SentenceType::BWW, "$GPBWW,213.8,T,218.0,M,TOWPT,FROMWPT*42"),
+        // GBS
+        (SentenceType::GBS, "$GPGBS,182141.000,15.5,15.3,7.2,21,0.9,0.5,0.8*54"),
         // GGA
         (SentenceType::GGA, "$GPGGA,133605.0,5521.75946,N,03731.93769,E,0,00,,,M,,M,,*4F"),
         // GLL
@@ -30,9 +34,11 @@ fn test_all_supported_messages() {
         // HDT
         (SentenceType::HDT, "$GPHDT,274.07,T*03"),
         // MDA
-        (SentenceType::MDA, "$WIMWV,041.1,R,01.0,N,A*16"),
+        (SentenceType::MDA, "$WIMDA,29.7544,I,1.0076,B,35.5,C,,,42.1,,20.6,C,116.4,T,107.7,M,1.2,N,0.6,M*66"),
+        // MTW
+        (SentenceType::MTW, "$INMTW,17.9,C*1B"),
         // MWV
-        (SentenceType::MWV, "$WIMDA,29.7544,I,1.0076,B,35.5,C,,,42.1,,20.6,C,116.4,T,107.7,M,1.2,N,0.6,M*66"),
+        (SentenceType::MWV, "$WIMWV,041.1,R,01.0,N,A*16"),
         // RMC
         (SentenceType::RMC, "$GPRMC,225446.33,A,4916.45,N,12311.12,W,000.5,054.7,191194,020.3,E,A*2B"),
         // RMZ
@@ -53,10 +59,12 @@ fn test_all_supported_messages() {
         (SentenceType::ZFO, "$GPZFO,145832.12,042359.17,WPT*3E"),
         // ZTG
         (SentenceType::ZTG, "$GPZTG,145832.12,042359.17,WPT*24"),
-        // DPT (Depth of Water)
-        (SentenceType::DPT, "$SDDPT,17.9,0.5*6D"),
+        // DBK
+        (SentenceType::DBK, "$SDDBK,1330.5,f,0405.5,M,0221.6,F*2E"),
         // DBS
         (SentenceType::DBS, "$SDDBS,12.3,f,3.75,M,2.05,F*37"),
+        // DPT (Depth of Water)
+        (SentenceType::DPT, "$SDDPT,17.9,0.5*6D"),
     ]
     .into_iter()
     .collect::<HashMap<_, _>>();

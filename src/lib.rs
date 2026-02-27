@@ -30,6 +30,7 @@
 #![deny(unsafe_code, rustdoc::broken_intra_doc_links)]
 
 mod error;
+pub mod generate;
 pub(crate) mod parse;
 mod parser;
 

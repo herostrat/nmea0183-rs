@@ -91,6 +91,37 @@ fn do_parse_dbk(i: &str) -> IResult<&str, DbkData> {
     ))
 }
 
+/// Helper to write the depth triple pattern: `x.x,f,x.x,M,x.x,F`
+pub(crate) fn write_depth_triple(
+    f: &mut dyn core::fmt::Write,
+    feet: &Option<f64>,
+    meters: &Option<f64>,
+    fathoms: &Option<f64>,
+) -> core::fmt::Result {
+    if let Some(v) = feet {
+        write!(f, "{}", v)?;
+    }
+    f.write_str(",f,")?;
+    if let Some(v) = meters {
+        write!(f, "{}", v)?;
+    }
+    f.write_str(",M,")?;
+    if let Some(v) = fathoms {
+        write!(f, "{}", v)?;
+    }
+    f.write_str(",F")
+}
+
+impl crate::generate::GenerateNmeaBody for DbkData {
+    fn sentence_type(&self) -> SentenceType {
+        SentenceType::DBK
+    }
+
+    fn write_body(&self, f: &mut dyn core::fmt::Write) -> core::fmt::Result {
+        write_depth_triple(f, &self.depth_feet, &self.depth_meters, &self.depth_fathoms)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -160,5 +191,23 @@ mod tests {
         assert_eq!(s.checksum, s.calc_checksum());
         assert_eq!(s.checksum, 0x20);
         assert!(parse_dbk(s).is_err());
+    }
+
+    #[test]
+    fn test_generate_dbk_roundtrip() {
+        let original = DbkData {
+            depth_feet: Some(1330.5),
+            depth_meters: Some(405.5),
+            depth_fathoms: Some(221.6),
+        };
+        let mut buf = heapless::String::<128>::new();
+        crate::generate::generate_sentence("SD", &original, &mut buf).unwrap();
+
+        let s = parse_nmea_sentence(&buf).unwrap();
+        assert_eq!(s.checksum, s.calc_checksum());
+        let parsed = parse_dbk(s).unwrap();
+        assert_eq!(parsed.depth_feet, Some(1330.5));
+        assert_eq!(parsed.depth_meters, Some(405.5));
+        assert_eq!(parsed.depth_fathoms, Some(221.6));
     }
 }

@@ -59,11 +59,25 @@ fn do_parse_hdt(i: &str) -> IResult<&str, HdtData> {
     Ok((i, HdtData { heading }))
 }
 
+impl crate::generate::GenerateNmeaBody for HdtData {
+    fn sentence_type(&self) -> SentenceType {
+        SentenceType::HDT
+    }
+
+    fn write_body(&self, f: &mut dyn core::fmt::Write) -> core::fmt::Result {
+        if let Some(h) = self.heading {
+            write!(f, "{}", h)?;
+        }
+        f.write_str(",T")
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use approx::assert_relative_eq;
 
     use super::*;
+    use crate::generate::generate_sentence;
     use crate::parse::parse_nmea_sentence;
 
     #[test]
@@ -82,5 +96,31 @@ mod tests {
 
         let data = parse_hdt(s);
         assert_eq!(data, Ok(HdtData { heading: None }));
+    }
+
+    #[test]
+    fn test_generate_hdt_roundtrip() {
+        let original = HdtData {
+            heading: Some(274.07),
+        };
+        let mut buf = heapless::String::<128>::new();
+        generate_sentence("GP", &original, &mut buf).unwrap();
+
+        let s = parse_nmea_sentence(&buf).unwrap();
+        assert_eq!(s.checksum, s.calc_checksum());
+        let parsed = parse_hdt(s).unwrap();
+        assert_relative_eq!(parsed.heading.unwrap(), 274.07);
+    }
+
+    #[test]
+    fn test_generate_hdt_empty() {
+        let original = HdtData { heading: None };
+        let mut buf = heapless::String::<128>::new();
+        generate_sentence("GP", &original, &mut buf).unwrap();
+
+        let s = parse_nmea_sentence(&buf).unwrap();
+        assert_eq!(s.checksum, s.calc_checksum());
+        let parsed = parse_hdt(s).unwrap();
+        assert_eq!(parsed.heading, None);
     }
 }

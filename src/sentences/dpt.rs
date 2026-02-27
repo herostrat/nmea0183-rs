@@ -103,6 +103,26 @@ fn do_parse_dpt(i: &str) -> IResult<&str, DptData> {
     ))
 }
 
+impl crate::generate::GenerateNmeaBody for DptData {
+    fn sentence_type(&self) -> SentenceType {
+        SentenceType::DPT
+    }
+
+    fn write_body(&self, f: &mut dyn core::fmt::Write) -> core::fmt::Result {
+        if let Some(v) = self.water_depth {
+            write!(f, "{}", v)?;
+        }
+        f.write_char(',')?;
+        if let Some(v) = self.offset {
+            write!(f, "{}", v)?;
+        }
+        if let Some(v) = self.max_range_scale {
+            write!(f, ",{}", v)?;
+        }
+        Ok(())
+    }
+}
+
 #[cfg(test)]
 mod tests {
 
@@ -288,5 +308,37 @@ mod tests {
             .try_for_each(|test_expectation| test_invalid_message(test_expectation.0))?;
 
         Ok(())
+    }
+
+    #[test]
+    fn test_generate_dpt_roundtrip() {
+        let original = DptData {
+            water_depth: Some(15.2),
+            offset: Some(0.5),
+            max_range_scale: None,
+        };
+        let mut buf = heapless::String::<128>::new();
+        crate::generate::generate_sentence("SD", &original, &mut buf).unwrap();
+
+        let sentence = crate::parse::parse_nmea_sentence(&buf).unwrap();
+        assert_eq!(sentence.checksum, sentence.calc_checksum());
+        let parsed = parse_dpt(sentence).unwrap();
+        assert_eq!(parsed, original);
+    }
+
+    #[test]
+    fn test_generate_dpt_with_range_scale() {
+        let original = DptData {
+            water_depth: Some(18.7),
+            offset: Some(0.5),
+            max_range_scale: Some(2.0),
+        };
+        let mut buf = heapless::String::<128>::new();
+        crate::generate::generate_sentence("SD", &original, &mut buf).unwrap();
+
+        let sentence = crate::parse::parse_nmea_sentence(&buf).unwrap();
+        assert_eq!(sentence.checksum, sentence.calc_checksum());
+        let parsed = parse_dpt(sentence).unwrap();
+        assert_eq!(parsed, original);
     }
 }

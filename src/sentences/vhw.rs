@@ -107,6 +107,35 @@ fn do_parse_vhw(i: &str) -> IResult<&str, VhwData> {
     ))
 }
 
+/// Helper to write a float-char pair: `x.x,C` or `,C` if None, or `,` if no char tag needed.
+fn write_float_char_pair(
+    f: &mut dyn core::fmt::Write,
+    val: &Option<f64>,
+    tag: char,
+) -> core::fmt::Result {
+    if let Some(v) = val {
+        write!(f, "{}", v)?;
+    }
+    f.write_char(',')?;
+    f.write_char(tag)
+}
+
+impl crate::generate::GenerateNmeaBody for VhwData {
+    fn sentence_type(&self) -> SentenceType {
+        SentenceType::VHW
+    }
+
+    fn write_body(&self, f: &mut dyn core::fmt::Write) -> core::fmt::Result {
+        write_float_char_pair(f, &self.heading_true, 'T')?;
+        f.write_char(',')?;
+        write_float_char_pair(f, &self.heading_magnetic, 'M')?;
+        f.write_char(',')?;
+        write_float_char_pair(f, &self.relative_speed_knots, 'N')?;
+        f.write_char(',')?;
+        write_float_char_pair(f, &self.relative_speed_kmph, 'K')
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use approx::assert_relative_eq;
@@ -215,5 +244,42 @@ mod tests {
                 relative_speed_kmph: None
             })
         );
+    }
+
+    #[test]
+    fn test_generate_vhw_roundtrip() {
+        let original = VhwData {
+            heading_true: Some(100.5),
+            heading_magnetic: Some(105.5),
+            relative_speed_knots: Some(10.5),
+            relative_speed_kmph: Some(19.4),
+        };
+        let mut buf = heapless::String::<128>::new();
+        crate::generate::generate_sentence("GP", &original, &mut buf).unwrap();
+
+        let s = parse_nmea_sentence(&buf).unwrap();
+        assert_eq!(s.checksum, s.calc_checksum());
+        let parsed = parse_vhw(s).unwrap();
+        assert_relative_eq!(parsed.heading_true.unwrap(), 100.5);
+        assert_relative_eq!(parsed.heading_magnetic.unwrap(), 105.5);
+        assert_relative_eq!(parsed.relative_speed_knots.unwrap(), 10.5);
+        assert_relative_eq!(parsed.relative_speed_kmph.unwrap(), 19.4);
+    }
+
+    #[test]
+    fn test_generate_vhw_empty() {
+        let original = VhwData {
+            heading_true: None,
+            heading_magnetic: None,
+            relative_speed_knots: None,
+            relative_speed_kmph: None,
+        };
+        let mut buf = heapless::String::<128>::new();
+        crate::generate::generate_sentence("GP", &original, &mut buf).unwrap();
+
+        let s = parse_nmea_sentence(&buf).unwrap();
+        assert_eq!(s.checksum, s.calc_checksum());
+        let parsed = parse_vhw(s).unwrap();
+        assert_eq!(parsed, original);
     }
 }

@@ -98,6 +98,26 @@ pub(crate) fn parse_faa_modes(i: &str) -> IResult<&str, FaaModes> {
     }
 }
 
+impl FaaMode {
+    /// Convert to the single-character NMEA representation.
+    #[inline]
+    pub fn to_nmea_char(self) -> char {
+        match self {
+            FaaMode::Autonomous => 'A',
+            FaaMode::Caution => 'C',
+            FaaMode::Differential => 'D',
+            FaaMode::Estimated => 'E',
+            FaaMode::FloatRtk => 'F',
+            FaaMode::Manual => 'M',
+            FaaMode::DataNotValid => 'N',
+            FaaMode::Precise => 'P',
+            FaaMode::FixedRtk => 'R',
+            FaaMode::Simulator => 'S',
+            FaaMode::Unsafe => 'U',
+        }
+    }
+}
+
 pub(crate) fn parse_faa_mode(value: char) -> Option<FaaMode> {
     match value {
         'A' => Some(FaaMode::Autonomous),

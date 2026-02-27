@@ -44,6 +44,20 @@ define_enum_with_count!(
     }
 );
 
+impl GnssType {
+    /// Convert to the canonical two-character NMEA talker ID.
+    pub fn to_talker_id(&self) -> &'static str {
+        match *self {
+            GnssType::Beidou => "BD",
+            GnssType::Galileo => "GA",
+            GnssType::Gps => "GP",
+            GnssType::Glonass => "GL",
+            GnssType::NavIC => "GI",
+            GnssType::Qzss => "QZ",
+        }
+    }
+}
+
 impl fmt::Display for GnssType {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {

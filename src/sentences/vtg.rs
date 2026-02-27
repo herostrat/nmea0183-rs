@@ -100,6 +100,32 @@ pub fn parse_vtg(sentence: NmeaSentence<'_>) -> Result<VtgData, Error<'_>> {
     }
 }
 
+impl crate::generate::GenerateNmeaBody for VtgData {
+    fn sentence_type(&self) -> SentenceType {
+        SentenceType::VTG
+    }
+
+    fn write_body(&self, f: &mut dyn core::fmt::Write) -> core::fmt::Result {
+        // Field 1: true course
+        if let Some(c) = self.true_course {
+            write!(f, "{}", c)?;
+        }
+        f.write_str(",T,")?;
+        // Field 3-4: magnetic course (not stored, emit empty)
+        f.write_str(",M,")?;
+        // Field 5-6: speed in knots
+        if let Some(s) = self.speed_over_ground {
+            write!(f, "{}", s)?;
+        }
+        f.write_str(",N,")?;
+        // Field 7-8: speed in km/h
+        if let Some(s) = self.speed_over_ground {
+            write!(f, "{}", s * 1.852)?;
+        }
+        f.write_str(",K")
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -134,5 +160,36 @@ mod tests {
             },
             run_parse_vtg("$GPVTG,054.7,T,034.4,M,005.5,N,010.2,K*48").unwrap()
         );
+    }
+
+    #[test]
+    fn test_generate_vtg_roundtrip() {
+        let original = VtgData {
+            true_course: Some(360.0),
+            speed_over_ground: Some(0.0),
+        };
+        let mut buf = heapless::String::<128>::new();
+        crate::generate::generate_sentence("GP", &original, &mut buf).unwrap();
+
+        let s = parse_nmea_sentence(&buf).expect("generated VTG should parse");
+        assert_eq!(s.checksum, s.calc_checksum());
+        let parsed = parse_vtg(s).unwrap();
+        assert_eq!(parsed.true_course, Some(360.0));
+        assert_eq!(parsed.speed_over_ground, Some(0.0));
+    }
+
+    #[test]
+    fn test_generate_vtg_empty() {
+        let original = VtgData {
+            true_course: None,
+            speed_over_ground: None,
+        };
+        let mut buf = heapless::String::<128>::new();
+        crate::generate::generate_sentence("GP", &original, &mut buf).unwrap();
+
+        let s = parse_nmea_sentence(&buf).expect("generated VTG should parse");
+        assert_eq!(s.checksum, s.calc_checksum());
+        let parsed = parse_vtg(s).unwrap();
+        assert_eq!(parsed, original);
     }
 }
