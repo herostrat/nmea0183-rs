@@ -34,10 +34,12 @@ pub enum GsaMode2 {
 /// <https://gpsd.gitlab.io/gpsd/NMEA.html#_gsa_gps_dop_and_active_satellites>
 ///
 /// ```text
-///        1 2 3                        14 15  16  17  18
-///        | | |                         |  |   |   |   |
-/// $--GSA,a,a,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x.x,x.x,x.x*hh<CR><LF>
+///        1 2 3                        14 15  16  17  18 19
+///        | | |                         |  |   |   |   |  |
+/// $--GSA,a,a,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x.x,x.x,x.x,x*hh<CR><LF>
 /// ```
+///
+/// Field 19 (NMEA 4.1+): System ID — 1=GPS, 2=GLONASS, 3=Galileo, 4=BDS
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(feature = "defmt", derive(defmt::Format))]
 #[derive(Debug, Clone, PartialEq)]
@@ -48,6 +50,8 @@ pub struct GsaData {
     pub pdop: Option<f32>,
     pub hdop: Option<f32>,
     pub vdop: Option<f32>,
+    /// NMEA 4.1+ System ID: 1=GPS, 2=GLONASS, 3=Galileo, 4=BDS
+    pub system_id: Option<u8>,
 }
 
 /// This function is take from `nom`, see `nom::multi::many0` (requires `alloc`)
@@ -114,7 +118,13 @@ fn gsa_prn_fields_parse(i: &str) -> IResult<&str, Vec<Option<u32>, 18>> {
     many0(terminated(opt(number::<u32>), char(','))).parse(i)
 }
 
-type GsaTail = (Vec<Option<u32>, 18>, Option<f32>, Option<f32>, Option<f32>);
+type GsaTail = (
+    Vec<Option<u32>, 18>,
+    Option<f32>,
+    Option<f32>,
+    Option<f32>,
+    Option<u8>,
+);
 
 fn do_parse_gsa_tail(i: &str) -> IResult<&str, GsaTail> {
     let (i, prns) = gsa_prn_fields_parse(i)?;
@@ -123,7 +133,13 @@ fn do_parse_gsa_tail(i: &str) -> IResult<&str, GsaTail> {
     let (i, hdop) = float(i)?;
     let (i, _) = char(',').parse(i)?;
     let (i, vdop) = float(i)?;
-    Ok((i, (prns, Some(pdop), Some(hdop), Some(vdop))))
+    // NMEA 4.1+: optional System ID field
+    let (i, system_id) = opt(|i| {
+        let (i, _) = char(',').parse(i)?;
+        number::<u8>(i)
+    })
+    .parse(i)?;
+    Ok((i, (prns, Some(pdop), Some(hdop), Some(vdop), system_id)))
 }
 
 fn is_comma(x: char) -> bool {
@@ -132,7 +148,7 @@ fn is_comma(x: char) -> bool {
 
 fn do_parse_empty_gsa_tail(i: &str) -> IResult<&str, GsaTail> {
     value(
-        (Vec::new(), None, None, None),
+        (Vec::new(), None, None, None, None),
         all_consuming(take_while1(is_comma)),
     )
     .parse(i)
@@ -171,6 +187,7 @@ fn do_parse_gsa(i: &str) -> IResult<&str, GsaData> {
             pdop: tail.1,
             hdop: tail.2,
             vdop: tail.3,
+            system_id: tail.4,
         },
     ))
 }
@@ -279,6 +296,11 @@ impl crate::generate::GenerateNmeaBody for GsaData {
             write!(f, "{}", vdop)?;
         }
 
+        // Field 18: System ID (NMEA 4.1+)
+        if let Some(sid) = self.system_id {
+            write!(f, ",{}", sid)?;
+        }
+
         Ok(())
     }
 }
@@ -312,6 +334,7 @@ mod tests {
                 pdop: Some(3.6),
                 hdop: Some(2.1),
                 vdop: Some(2.2),
+                system_id: None,
             },
             gsa
         );
@@ -339,6 +362,7 @@ mod tests {
             pdop: Some(1.7),
             hdop: Some(1.0),
             vdop: Some(1.3),
+            system_id: None,
         };
         let mut buf = heapless::String::<256>::new();
         crate::generate::generate_sentence("GP", &original, &mut buf).unwrap();
@@ -358,6 +382,45 @@ mod tests {
     }
 
     #[test]
+    fn test_parse_gsa_with_system_id() {
+        // NMEA 4.1+ sentence with System ID field (1=GPS)
+        let s =
+            parse_nmea_sentence("$GNGSA,A,3,23,31,22,16,03,07,,,,,,,1.8,1.1,1.4,1*33").unwrap();
+        let gsa = parse_gsa(s).unwrap();
+        assert_eq!(gsa.mode1, GsaMode1::Automatic);
+        assert_eq!(gsa.mode2, GsaMode2::Fix3D);
+        assert_eq!(
+            gsa.fix_sats_prn,
+            Vec::<u32, 18>::from_slice(&[23, 31, 22, 16, 3, 7]).unwrap()
+        );
+        assert_eq!(gsa.pdop, Some(1.8));
+        assert_eq!(gsa.hdop, Some(1.1));
+        assert_eq!(gsa.vdop, Some(1.4));
+        assert_eq!(gsa.system_id, Some(1));
+    }
+
+    #[test]
+    fn test_generate_gsa_with_system_id_roundtrip() {
+        let original = GsaData {
+            mode1: GsaMode1::Automatic,
+            mode2: GsaMode2::Fix3D,
+            fix_sats_prn: Vec::from_slice(&[23, 31, 22]).unwrap(),
+            pdop: Some(1.8),
+            hdop: Some(1.1),
+            vdop: Some(1.4),
+            system_id: Some(3), // Galileo
+        };
+        let mut buf = heapless::String::<256>::new();
+        crate::generate::generate_sentence("GN", &original, &mut buf).unwrap();
+
+        let s = parse_nmea_sentence(&buf).unwrap();
+        assert_eq!(s.checksum, s.calc_checksum());
+        let parsed = parse_gsa(s).unwrap();
+        assert_eq!(parsed.system_id, Some(3));
+        assert_eq!(parsed.fix_sats_prn, original.fix_sats_prn);
+    }
+
+    #[test]
     fn test_generate_gsa_empty_prns() {
         let original = GsaData {
             mode1: GsaMode1::Manual,
@@ -366,6 +429,7 @@ mod tests {
             pdop: None,
             hdop: None,
             vdop: None,
+            system_id: None,
         };
         let mut buf = heapless::String::<256>::new();
         crate::generate::generate_sentence("GP", &original, &mut buf).unwrap();

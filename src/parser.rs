@@ -332,7 +332,7 @@ impl<'a> Nmea {
                 self.sentences_for_this_time.insert(SentenceType::RMC);
             }
             ParseResult::GNS(gns_data) => {
-                let fix_type: FixType = gns_data.faa_modes.into();
+                let fix_type: FixType = gns_data.faa_modes.clone().into();
                 if !fix_type.is_valid() {
                     self.clear_position_info();
                     return Ok(FixType::Invalid);

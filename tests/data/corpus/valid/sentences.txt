@@ -44,6 +44,7 @@ $IIDBT,432.8,f,,M,,F*1C
 $SDDPT,17.9,0.5*6D
 $IIDPT,4.1,0.0*45
 $IIDPT,4.1,1.0*44
+$IIDPT,4.1,-1.0*69
 
 # GBS - GPS Satellite Fault Detection
 $GPGBS,182141.000,15.5,15.3,7.2,21,0.9,0.5,0.8*54

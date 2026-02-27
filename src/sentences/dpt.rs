@@ -80,7 +80,7 @@ fn take_and_make_f64(input: &str) -> IResult<&str, f64> {
 fn do_parse_dpt(i: &str) -> IResult<&str, DptData> {
     let (i, water_depth) = opt(parse_positive_f64).parse(i)?;
     let (i, _) = char(',').parse(i)?;
-    let (i, offset) = opt(parse_positive_f64).parse(i)?;
+    let (i, offset) = opt(double).parse(i)?;
     let (i, _) = opt(char(',')).parse(i)?;
     let (i, max_range_scale) = opt(take_and_make_f64).parse(i)?;
 
@@ -178,7 +178,7 @@ mod tests {
 
     #[test]
     fn test_parse_dpt() -> std::result::Result<(), String> {
-        let correct_dpt_messages: [TestExpectation; 11] = [
+        let correct_dpt_messages: [TestExpectation; 12] = [
             TestExpectation(
                 "$SDDPT,2.4,,*53",
                 DptData {
@@ -267,9 +267,17 @@ mod tests {
                     max_range_scale: Some(2.0),
                 },
             ), // Extra field (NMEA 2.3 DPT has only 2 fields before checksum)
+            TestExpectation(
+                "$IIDPT,4.1,-1.0*69",
+                DptData {
+                    water_depth: Some(4.1),
+                    offset: Some(-1.0),
+                    max_range_scale: None,
+                },
+            ), // Negative offset (transducer-to-keel)
         ];
 
-        let incorrect_dpt_messages: [FailedTestExpectation; 9] = [
+        let incorrect_dpt_messages: [FailedTestExpectation; 8] = [
             FailedTestExpectation("$SDDPT,-12.3,0.5,*6A"),
             FailedTestExpectation(
                 "$SDDPT,ABC,0.5*41", // non-numeric water depth
@@ -285,9 +293,6 @@ mod tests {
             ),
             FailedTestExpectation(
                 "$SDDPT,16.5,0.5,3.0,4.0*6B", // Too many fields
-            ),
-            FailedTestExpectation(
-                "$SDDPT,21.0,-1.5*65", // negative offset
             ),
             FailedTestExpectation(
                 "$SDDPT,17.2 0.5*60", // missing comma

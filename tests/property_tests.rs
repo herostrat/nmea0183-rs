@@ -212,8 +212,7 @@ fn check_dpt_roundtrip(depth: f64, offset: f64) -> TestResult {
         return TestResult::discard();
     }
     // DPT parser uses nom::float which rejects negative zero display "-0"
-    // and the existing parser rejects negative offsets
-    if depth <= 0.0 || depth > 9999.0 || offset < 0.0 || offset > 999.0 {
+    if depth <= 0.0 || depth > 9999.0 || offset.abs() > 999.0 {
         return TestResult::discard();
     }
 

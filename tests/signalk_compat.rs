@@ -27,12 +27,13 @@ fn test_signalk_sentences_parse() {
         ("DPT", "$IIDPT,4.1,0.0*45"),
         ("DPT", "$IIDPT,4.1,*6B"),
         ("DPT", "$IIDPT,4.1,1.0*44"),
-        // NOTE: "$IIDPT,4.1,-1.0*69" - existing DPT parser rejects negative offsets
+        ("DPT", "$IIDPT,4.1,-1.0*69"),
         // GGA - Global Positioning System Fix Data
         ("GGA", "$GPGGA,172814.0,3723.46587704,N,12202.26957864,W,2,6,1.2,18.893,M,-25.669,M,2.0,0031*4F"),
         // GLL - Geographic Position
         ("GLL", "$GPGLL,5958.613,N,02325.928,E,121022,A,D*40"),
-        // NOTE: "$GPGNS,111648.00,...,ANN,..." - existing GNS parser doesn't handle multi-char mode "ANN"
+        // GNS - Fix Data (with multi-char FAA mode indicator)
+        ("GNS", "$GPGNS,224749.00,3333.4268304,N,11153.3538273,W,ANN,19,0.6,406.110,-26.294,6.0,0138,S,*43"),
         // GSV - Satellites in View
         ("GSV", "$GPGSV,3,1,09,07,16,321,37,08,29,281,33,10,29,143,35,16,75,216,35,0*6E"),
         ("GSV", "$GPGSV,3,2,09,18,38,057,35,20,44,105,40,21,81,117,33,26,43,164,25,0*63"),
@@ -192,15 +193,17 @@ fn test_signalk_dpt_values() {
     }
 }
 
-/// Known limitation: existing DPT parser rejects negative offsets.
-/// signalk sends `$IIDPT,4.1,-1.0*69` (transducer-to-keel offset).
+/// DPT with negative offset (transducer-to-keel).
 #[test]
-fn test_signalk_dpt_negative_offset_known_limitation() {
-    let result = parse_str("$IIDPT,4.1,-1.0*69");
-    assert!(
-        result.is_err(),
-        "DPT parser currently rejects negative offsets (known limitation)"
-    );
+fn test_signalk_dpt_negative_offset() {
+    use approx::assert_relative_eq;
+    let result = parse_str("$IIDPT,4.1,-1.0*69").unwrap();
+    if let nmea::ParseResult::DPT(data) = result {
+        assert_relative_eq!(data.water_depth.unwrap(), 4.1);
+        assert_relative_eq!(data.offset.unwrap(), -1.0);
+    } else {
+        panic!("Expected DPT result");
+    }
 }
 
 #[test]
@@ -485,6 +488,32 @@ fn test_signalk_empty_field_sentences() {
         failures.len(),
         failures.join("\n")
     );
+}
+
+/// GNS with multi-char FAA mode indicator (NMEA 4.1+: GPS=A, GLONASS=N, Galileo=N).
+#[test]
+fn test_signalk_gns_multi_char_mode() {
+    use approx::assert_relative_eq;
+    let result = parse_str(
+        "$GPGNS,224749.00,3333.4268304,N,11153.3538273,W,ANN,19,0.6,406.110,-26.294,6.0,0138,S,*43",
+    )
+    .unwrap();
+    if let nmea::ParseResult::GNS(data) = result {
+        assert_eq!(data.faa_modes.len(), 3);
+        assert_eq!(data.faa_modes.primary(), nmea::sentences::FaaMode::Autonomous);
+        assert_eq!(
+            data.faa_modes.get(1),
+            Some(&nmea::sentences::FaaMode::DataNotValid)
+        );
+        assert_eq!(
+            data.faa_modes.get(2),
+            Some(&nmea::sentences::FaaMode::DataNotValid)
+        );
+        assert_relative_eq!(data.lat.unwrap(), 33.0 + 33.4268304 / 60., epsilon = 1e-5);
+        assert_eq!(data.nsattelites, 19);
+    } else {
+        panic!("Expected GNS result");
+    }
 }
 
 /// Verify that our parser correctly rejects invalid checksums, matching signalk behavior.
