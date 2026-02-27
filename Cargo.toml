@@ -319,3 +319,7 @@ required-features = ["all-sentences"]
 [[test]]
 name = "serialization_tests"
 required-features = ["all-sentences"]
+
+[[test]]
+name = "property_tests"
+required-features = ["all-sentences"]
