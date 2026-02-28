@@ -177,7 +177,7 @@ fn do_parse_gsa(i: &str) -> IResult<&str, GsaData> {
             fix_sats_prn: {
                 let mut fix_sats_prn = Vec::<u32, 18>::new();
                 for sat in tail.0.iter().flatten() {
-                    fix_sats_prn.push(*sat).unwrap()
+                    let _ = fix_sats_prn.push(*sat);
                 }
                 // now that we don't have `drain()` from `std::Vec`,
                 // we clear the `heapless::Vec`'s tail manually

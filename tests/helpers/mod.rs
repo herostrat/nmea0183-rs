@@ -2,7 +2,7 @@ use heapless::Vec;
 use nmea::Satellite;
 
 /// ensure right order before dump to string
-pub fn format_satellites(mut sats: Vec<Satellite, 58>) -> std::vec::Vec<String> {
+pub fn format_satellites(mut sats: Vec<Satellite, 72>) -> std::vec::Vec<String> {
     sats.sort_by_key(|s| (s.gnss_type() as u8, s.prn()));
     // to not depend on Debug impl for `Satellite` stability
 

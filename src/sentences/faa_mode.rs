@@ -118,9 +118,8 @@ impl FaaModes {
 pub(crate) fn parse_faa_modes(i: &str) -> IResult<&str, FaaModes> {
     let (mut rest, sym) = anychar(i)?;
     let mut modes = Vec::<FaaMode, 6>::new();
-    modes
-        .push(parse_faa_mode(sym).ok_or_else(|| nom_parse_failure(i))?)
-        .unwrap();
+    // First push into empty Vec<_, 6> — cannot fail, but we avoid unwrap on principle
+    let _ = modes.push(parse_faa_mode(sym).ok_or_else(|| nom_parse_failure(i))?);
 
     // Parse up to 5 more mode characters
     for _ in 0..5 {

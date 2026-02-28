@@ -136,18 +136,23 @@ impl<'a> Nmea {
         }
     }
 
-    /// Returns used satellites
-    pub fn satellites(&self) -> Vec<Satellite, 58> {
-        let mut ret = Vec::<Satellite, 58>::new();
+    /// Returns used satellites.
+    ///
+    /// The capacity is 72 (covering GPS 16 + GLONASS 12 + BeiDou 18 + Galileo 12 +
+    /// NavIC 7 + QZSS 7). If more satellites are reported than fit, extras are
+    /// silently dropped rather than panicking.
+    pub fn satellites(&self) -> Vec<Satellite, 72> {
+        let mut ret = Vec::<Satellite, 72>::new();
         let sat_key = |sat: &Satellite| (sat.gnss_type() as u8, sat.prn());
         for sns in &self.satellites_scan {
-            // for sat_pack in sns.data.iter().rev() {
             for sat_pack in sns.data.iter().rev().flatten() {
                 for sat in sat_pack.iter() {
                     match ret.binary_search_by_key(&sat_key(sat), sat_key) {
-                        //already set
-                        Ok(_pos) => {}
-                        Err(pos) => ret.insert(pos, sat.clone()).unwrap(),
+                        Ok(_pos) => {} // already present
+                        Err(pos) => {
+                            // Silently drop if capacity is reached
+                            let _ = ret.insert(pos, sat.clone());
+                        }
                     }
                 }
             }
@@ -171,9 +176,11 @@ impl<'a> Nmea {
             let d = &mut self.satellites_scan[data.gnss_type as usize];
             let full_pack_size: usize = data.sentence_num.into();
             d.max_len = full_pack_size.max(d.max_len);
-            d.data
-                .push_back(data.sats_info)
-                .expect("Should not get the more than expected number of satellites");
+            // If the deque is full, drop the oldest entry before pushing
+            if d.data.is_full() {
+                d.data.pop_front();
+            }
+            let _ = d.data.push_back(data.sats_info);
             if d.data.len() > d.max_len {
                 d.data.pop_front();
             }
@@ -470,11 +477,8 @@ impl fmt::Display for Nmea {
 #[derive(Debug, Clone, Default)]
 struct SatsPack {
     /// max number of visible GNSS satellites per hemisphere, assuming global coverage
-    /// GPS: 16
-    /// GLONASS: 12
-    /// BeiDou: 12 + 3 IGSO + 3 GEO
-    /// Galileo: 12
-    /// => 58 total Satellites => max 15 rows of data
+    /// GPS: 16, GLONASS: 12, BeiDou: 18, Galileo: 12, NavIC: 7, QZSS: 7
+    /// => 72 total Satellites => max 18 rows of data
     #[cfg_attr(feature = "serde", serde(with = "serde_deq"))]
     #[cfg_attr(feature = "defmt", defmt(Debug2Format))]
     data: Deque<Vec<Option<Satellite>, 4>, 15>,
