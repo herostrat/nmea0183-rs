@@ -30,7 +30,7 @@ use crate::{
 /// 4. K = Kilometers
 /// 5. Waypoint ID, Destination
 /// 6. Waypoint ID, Origin
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(feature = "defmt", derive(defmt::Format))]
 pub struct WncData {

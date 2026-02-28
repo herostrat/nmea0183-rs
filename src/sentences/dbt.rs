@@ -27,7 +27,7 @@ use crate::{Error, ParseResult, SentenceType, parse::NmeaSentence};
 /// 7. Mandatory NMEA checksum
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(feature = "defmt", derive(defmt::Format))]
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct DbtData {
     pub depth_feet: Option<f64>,
     pub depth_meters: Option<f64>,

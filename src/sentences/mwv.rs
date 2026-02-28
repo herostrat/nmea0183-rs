@@ -19,7 +19,7 @@ use crate::{Error, SentenceType, parse::NmeaSentence};
 /// ```
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(feature = "defmt", derive(defmt::Format))]
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct MwvData {
     pub wind_direction: Option<f32>,
     pub reference: Option<MwvReference>,
