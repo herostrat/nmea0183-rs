@@ -8,7 +8,7 @@
 
 ## NMEA 0183 sentence parser and generator
 
-Supports parsing and generating 48 sentence types across GNSS, navigation, water/depth, wind, heading, equipment, radar, sensor/transducer and AIS categories.
+Supports parsing and generating 49 sentence types across GNSS, navigation, water/depth, wind, heading, equipment, radar, sensor/transducer, safety/DSC and AIS categories.
 
 Supported sentences (alphabetically ordered):
 
@@ -23,6 +23,7 @@ Supported sentences (alphabetically ordered):
 - `DBS` - Depth Below Surface (feature: `water`)
 - `DBT` - Depth Below Transducer (feature: `water`)
 - `DPT` - Depth of Water (feature: `water`)
+- `DSC` - Digital Selective Calling (feature: `safety`)
 - `GBS` - GPS Satellite Fault Detection (feature: `GNSS`)
 - `GGA` - * Global Positioning System Fix Data (feature: `GNSS`)
 - `GLL` - * Geographic Position - Latitude/Longitude (feature: `GNSS`)

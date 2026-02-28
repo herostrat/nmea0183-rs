@@ -118,6 +118,7 @@ pub enum ParseResult {
     DBS(DbsData),
     DBT(DbtData),
     DPT(DptData),
+    DSC(DscData),
     GBS(GbsData),
     GGA(GgaData),
     GLL(GllData),
@@ -212,6 +213,7 @@ impl From<&ParseResult> for SentenceType {
             ParseResult::PGRMZ(_) => SentenceType::RMZ,
             ParseResult::ZDA(_) => SentenceType::ZDA,
             ParseResult::DPT(_) => SentenceType::DPT,
+            ParseResult::DSC(_) => SentenceType::DSC,
             ParseResult::Unsupported(sentence_type) => *sentence_type,
         }
     }
@@ -656,6 +658,15 @@ pub fn parse_str(sentence_input: &str) -> Result<ParseResult, Error<'_>> {
                 cfg_if! {
                     if #[cfg(feature = "DPT")] {
                         parse_dpt(nmea_sentence).map(ParseResult::DPT)
+                    } else {
+                        return Err(Error::DisabledSentence);
+                    }
+                }
+            }
+            SentenceType::DSC => {
+                cfg_if! {
+                    if #[cfg(feature = "DSC")] {
+                        parse_dsc(nmea_sentence).map(Into::into)
                     } else {
                         return Err(Error::DisabledSentence);
                     }

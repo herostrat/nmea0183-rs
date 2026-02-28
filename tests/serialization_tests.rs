@@ -105,6 +105,7 @@ fn generate_from_parse_result(talker_id: &str, result: &ParseResult) -> String {
         ParseResult::DBS(data) => generate_sentence(talker_id, data, &mut buf).unwrap(),
         ParseResult::DBT(data) => generate_sentence(talker_id, data, &mut buf).unwrap(),
         ParseResult::DPT(data) => generate_sentence(talker_id, data, &mut buf).unwrap(),
+        ParseResult::DSC(data) => generate_sentence(talker_id, data, &mut buf).unwrap(),
         ParseResult::GBS(data) => generate_sentence(talker_id, data, &mut buf).unwrap(),
         ParseResult::GGA(data) => generate_sentence(talker_id, data, &mut buf).unwrap(),
         ParseResult::GLL(data) => generate_sentence(talker_id, data, &mut buf).unwrap(),

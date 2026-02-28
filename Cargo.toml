@@ -84,7 +84,7 @@ GNSS = ["APA", "ALM", "GBS", "GGA", "GLL", "GNS", "GSA", "GST", "GSV", "RMC", "V
 ## Waypoint
 waypoint = ["AAM", "BOD", "BWC", "BWW", "WNC", "ZFO", "ZTG"]
 ## Maritime
-maritime = ["waypoint", "water", "radar", "heading", "navigation", "wind", "equipment", "current", "ais", "sensor"]
+maritime = ["waypoint", "water", "radar", "heading", "navigation", "wind", "equipment", "current", "ais", "sensor", "safety"]
 ## Radar
 radar = ["TTM"]
 ## Water
@@ -99,6 +99,8 @@ wind = ["MWD", "VPW", "VWR", "VWT"]
 sensor = ["XDR"]
 ## Equipment
 equipment = ["RPM", "RSA"]
+## Safety / DSC
+safety = ["DSC"]
 ## AIS
 ais = ["VDM"]
 ## Current
@@ -153,6 +155,10 @@ DBT = []
 ## Depth of Water
 ## (feature: `water`)
 DPT = []
+
+## Digital Selective Calling
+## (feature: `safety`)
+DSC = []
 
 ## GPS Satellite Fault Detection
 ## (feature: `GNSS`)

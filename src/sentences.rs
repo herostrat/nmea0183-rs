@@ -11,6 +11,7 @@ pub mod dbk;
 pub mod dbs;
 pub mod dbt;
 pub mod dpt;
+pub mod dsc;
 pub mod gbs;
 pub mod gga;
 pub mod gll;
@@ -68,6 +69,7 @@ pub use {
     dbs::{DbsData, parse_dbs},
     dbt::{DbtData, parse_dbt},
     dpt::{DptData, parse_dpt},
+    dsc::{DscData, parse_dsc},
     faa_mode::{FaaMode, FaaModes},
     fix_type::FixType,
     gbs::{GbsData, parse_gbs},

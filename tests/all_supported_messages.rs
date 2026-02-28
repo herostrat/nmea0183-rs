@@ -75,6 +75,8 @@ fn test_all_supported_messages() {
         (SentenceType::DBT, "$SDDBT,12.3,f,3.75,M,2.05,F*30"),
         // DPT
         (SentenceType::DPT, "$SDDPT,17.9,0.5*6D"),
+        // DSC
+        (SentenceType::DSC, "$CDDSC,12,3380400790,12,06,00,1423108312,2019,,,S,E*6A"),
         // HDG
         (SentenceType::HDG, "$HCHDG,98.3,0.0,E,12.6,W*57"),
         // HDM
