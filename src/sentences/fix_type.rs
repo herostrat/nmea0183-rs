@@ -13,6 +13,8 @@ pub enum FixType {
     Estimated,
     Manual,
     Simulation,
+    /// Satellite-Based Augmentation System (WAAS/EGNOS/MSAS)
+    Sbas,
 }
 
 impl FixType {
@@ -20,7 +22,7 @@ impl FixType {
     pub fn is_valid(self) -> bool {
         match self {
             FixType::Simulation | FixType::Manual | FixType::Estimated | FixType::Invalid => false,
-            FixType::DGps | FixType::Gps | FixType::Rtk | FixType::FloatRtk | FixType::Pps => true,
+            FixType::DGps | FixType::Gps | FixType::Rtk | FixType::FloatRtk | FixType::Pps | FixType::Sbas => true,
         }
     }
 
@@ -37,6 +39,7 @@ impl FixType {
             FixType::Estimated => '6',
             FixType::Manual => '7',
             FixType::Simulation => '8',
+            FixType::Sbas => '9',
         }
     }
 }
@@ -53,6 +56,7 @@ impl From<char> for FixType {
             '6' => FixType::Estimated,
             '7' => FixType::Manual,
             '8' => FixType::Simulation,
+            '9' => FixType::Sbas,
             _ => FixType::Invalid,
         }
     }

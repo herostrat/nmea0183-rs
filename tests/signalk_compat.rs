@@ -469,7 +469,7 @@ fn test_signalk_empty_field_sentences() {
     // BOD: requires bearing type char 'T'/'M'
     // BWC: lat/lon parser expects N/S/E/W designators
     // DBK/DBS/DBT: depth unit char parser is not fully optional
-    // GGA: fix quality requires one_of("012345678")
+    // GGA: fix quality requires one_of("0123456789")
     // GLL: status field requires one_of chars
     // GNS: mode indicator field requires non-empty
     // HDM/HDT: trailing 'M'/'T' char is mandatory
