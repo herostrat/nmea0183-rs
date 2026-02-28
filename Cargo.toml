@@ -84,7 +84,7 @@ GNSS = ["APA", "ALM", "GBS", "GGA", "GLL", "GNS", "GSA", "GST", "GSV", "RMC", "V
 ## Waypoint
 waypoint = ["AAM", "BOD", "BWC", "BWW", "WNC", "ZFO", "ZTG"]
 ## Maritime
-maritime = ["waypoint", "water", "radar", "heading", "navigation", "wind", "equipment", "current", "ais"]
+maritime = ["waypoint", "water", "radar", "heading", "navigation", "wind", "equipment", "current", "ais", "sensor"]
 ## Radar
 radar = ["TTM"]
 ## Water
@@ -95,6 +95,8 @@ heading = ["HDG", "HDM", "HSC", "ROT"]
 navigation = ["APB", "RMB", "XTE"]
 ## Wind
 wind = ["MWD", "VPW", "VWR", "VWT"]
+## Sensor / Transducer
+sensor = ["XDR"]
 ## Equipment
 equipment = ["RPM", "RSA"]
 ## AIS
@@ -275,6 +277,10 @@ VWR = []
 ## True Wind Speed and Angle
 ## (feature: `wind`)
 VWT = []
+
+## Transducer Measurement
+## (feature: `sensor`)
+XDR = []
 
 ## Cross-Track Error, Measured
 ## (feature: `navigation`)

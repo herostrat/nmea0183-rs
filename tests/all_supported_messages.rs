@@ -97,6 +97,8 @@ fn test_all_supported_messages() {
         (SentenceType::VLW, "$VWVLW,7803.2,N,0.00,N*42"),
         // VPW
         (SentenceType::VPW, "$IIVPW,4.5,N,2.3,M*52"),
+        // XDR
+        (SentenceType::XDR, "$WIXDR,C,24.3,C,ENV_TEMP*45"),
         // XTE
         (SentenceType::XTE, "$GPXTE,A,A,0.67,L,N*6F"),
     ]

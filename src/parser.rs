@@ -403,6 +403,7 @@ impl<'a> Nmea {
             | ParseResult::VDO(_)
             | ParseResult::VWR(_)
             | ParseResult::VWT(_)
+            | ParseResult::XDR(_)
             | ParseResult::XTE(_)
             | ParseResult::ZDA(_)
             | ParseResult::ZFO(_)

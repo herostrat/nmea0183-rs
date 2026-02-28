@@ -139,6 +139,7 @@ fn generate_from_parse_result(talker_id: &str, result: &ParseResult) -> String {
         ParseResult::VTG(data) => generate_sentence(talker_id, data, &mut buf).unwrap(),
         ParseResult::VWR(data) => generate_sentence(talker_id, data, &mut buf).unwrap(),
         ParseResult::VWT(data) => generate_sentence(talker_id, data, &mut buf).unwrap(),
+        ParseResult::XDR(data) => generate_sentence(talker_id, data, &mut buf).unwrap(),
         ParseResult::XTE(data) => generate_sentence(talker_id, data, &mut buf).unwrap(),
         ParseResult::WNC(data) => generate_sentence(talker_id, data, &mut buf).unwrap(),
         ParseResult::ZDA(data) => generate_sentence(talker_id, data, &mut buf).unwrap(),

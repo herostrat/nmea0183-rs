@@ -43,6 +43,7 @@ pub mod vpw;
 pub mod vtg;
 pub mod vwr;
 pub mod vwt;
+pub mod xdr;
 pub mod xte;
 pub mod wnc;
 pub mod zda;
@@ -104,6 +105,7 @@ pub use {
     vtg::{VtgData, parse_vtg},
     vwr::{VwrData, parse_vwr},
     vwt::{VwtData, parse_vwt},
+    xdr::{XdrData, XdrMeasurement, parse_xdr},
     xte::{XteData, parse_xte},
     wnc::{WncData, parse_wnc},
     zda::{ZdaData, parse_zda},

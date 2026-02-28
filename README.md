@@ -8,7 +8,7 @@
 
 ## NMEA 0183 sentence parser and generator
 
-Supports parsing and generating 47 sentence types across GNSS, navigation, water/depth, wind, heading, equipment, radar and AIS categories.
+Supports parsing and generating 48 sentence types across GNSS, navigation, water/depth, wind, heading, equipment, radar, sensor/transducer and AIS categories.
 
 Supported sentences (alphabetically ordered):
 
@@ -55,6 +55,7 @@ Supported sentences (alphabetically ordered):
 - `VWR` - Relative Wind Speed and Angle (feature: `wind`)
 - `VWT` - True Wind Speed and Angle (feature: `wind`)
 - `WNC` - Distance - Waypoint to waypoint (feature: `waypoint`)
+- `XDR` - Transducer Measurement (feature: `sensor`)
 - `XTE` - Cross-Track Error, Measured (feature: `navigation`)
 - `ZDA` - Time & Date - UTC, day, month, year and local time zone (feature: `other`)
 - `ZFO` - UTC & Time from origin Waypoint (feature: `waypoint`)
