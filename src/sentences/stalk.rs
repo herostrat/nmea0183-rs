@@ -1,9 +1,6 @@
 use heapless::Vec;
 use nom::{
-    IResult, Parser as _,
-    bytes::complete::take,
-    character::complete::char,
-    combinator::opt,
+    IResult, Parser as _, bytes::complete::take, character::complete::char, combinator::opt,
 };
 
 use crate::{Error, NmeaSentence, ParseResult, SentenceType};

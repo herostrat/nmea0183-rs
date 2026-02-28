@@ -494,9 +494,15 @@ mod tests {
         assert_eq!(parsed.status_of_fix, original.status_of_fix);
         assert_relative_eq!(parsed.lat.unwrap(), original.lat.unwrap(), epsilon = 1e-5);
         assert_relative_eq!(parsed.lon.unwrap(), original.lon.unwrap(), epsilon = 1e-5);
-        assert_relative_eq!(parsed.speed_over_ground.unwrap(), original.speed_over_ground.unwrap());
+        assert_relative_eq!(
+            parsed.speed_over_ground.unwrap(),
+            original.speed_over_ground.unwrap()
+        );
         assert_relative_eq!(parsed.true_course.unwrap(), original.true_course.unwrap());
-        assert_relative_eq!(parsed.magnetic_variation.unwrap(), original.magnetic_variation.unwrap());
+        assert_relative_eq!(
+            parsed.magnetic_variation.unwrap(),
+            original.magnetic_variation.unwrap()
+        );
         assert_eq!(parsed.faa_mode, original.faa_mode);
         assert_eq!(parsed.nav_status, original.nav_status);
     }
@@ -525,9 +531,15 @@ mod tests {
         assert_eq!(parsed.status_of_fix, original.status_of_fix);
         assert_relative_eq!(parsed.lat.unwrap(), original.lat.unwrap(), epsilon = 1e-5);
         assert_relative_eq!(parsed.lon.unwrap(), original.lon.unwrap(), epsilon = 1e-5);
-        assert_relative_eq!(parsed.speed_over_ground.unwrap(), original.speed_over_ground.unwrap());
+        assert_relative_eq!(
+            parsed.speed_over_ground.unwrap(),
+            original.speed_over_ground.unwrap()
+        );
         assert_relative_eq!(parsed.true_course.unwrap(), original.true_course.unwrap());
-        assert_relative_eq!(parsed.magnetic_variation.unwrap(), original.magnetic_variation.unwrap());
+        assert_relative_eq!(
+            parsed.magnetic_variation.unwrap(),
+            original.magnetic_variation.unwrap()
+        );
         assert_eq!(parsed.faa_mode, original.faa_mode);
         assert_eq!(parsed.nav_status, original.nav_status);
     }

@@ -177,9 +177,18 @@ mod tests {
         let parsed = parse_gst(s).unwrap();
         assert_eq!(parsed.time, original.time);
         assert_relative_eq!(parsed.rms_sd.unwrap(), original.rms_sd.unwrap());
-        assert_relative_eq!(parsed.ellipse_semi_major_sd.unwrap(), original.ellipse_semi_major_sd.unwrap());
-        assert_relative_eq!(parsed.ellipse_semi_minor_sd.unwrap(), original.ellipse_semi_minor_sd.unwrap());
-        assert_relative_eq!(parsed.err_ellipse_orientation.unwrap(), original.err_ellipse_orientation.unwrap());
+        assert_relative_eq!(
+            parsed.ellipse_semi_major_sd.unwrap(),
+            original.ellipse_semi_major_sd.unwrap()
+        );
+        assert_relative_eq!(
+            parsed.ellipse_semi_minor_sd.unwrap(),
+            original.ellipse_semi_minor_sd.unwrap()
+        );
+        assert_relative_eq!(
+            parsed.err_ellipse_orientation.unwrap(),
+            original.err_ellipse_orientation.unwrap()
+        );
         assert_relative_eq!(parsed.lat_sd.unwrap(), original.lat_sd.unwrap());
         assert_relative_eq!(parsed.long_sd.unwrap(), original.long_sd.unwrap());
         assert_relative_eq!(parsed.alt_sd.unwrap(), original.alt_sd.unwrap());

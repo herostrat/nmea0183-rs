@@ -244,10 +244,7 @@ fn parse_ttm_angle(i: &str) -> IResult<&str, Option<TtmAngle>> {
 }
 
 /// Write a TtmAngle (value,reference_char) or (,) if None.
-fn write_ttm_angle(
-    f: &mut dyn core::fmt::Write,
-    angle: &Option<TtmAngle>,
-) -> core::fmt::Result {
+fn write_ttm_angle(f: &mut dyn core::fmt::Write, angle: &Option<TtmAngle>) -> core::fmt::Result {
     match angle {
         Some(a) => {
             write!(f, "{}", a.angle)?;

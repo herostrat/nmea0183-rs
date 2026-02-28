@@ -177,8 +177,16 @@ mod tests {
         let s = parse_nmea_sentence(&buf).unwrap();
         assert_eq!(s.checksum, s.calc_checksum());
         let parsed = parse_gll(s).unwrap();
-        assert_relative_eq!(parsed.latitude.unwrap(), original.latitude.unwrap(), epsilon = 1e-5);
-        assert_relative_eq!(parsed.longitude.unwrap(), original.longitude.unwrap(), epsilon = 1e-5);
+        assert_relative_eq!(
+            parsed.latitude.unwrap(),
+            original.latitude.unwrap(),
+            epsilon = 1e-5
+        );
+        assert_relative_eq!(
+            parsed.longitude.unwrap(),
+            original.longitude.unwrap(),
+            epsilon = 1e-5
+        );
         assert_eq!(parsed.fix_time, original.fix_time);
         assert_eq!(parsed.valid, original.valid);
         assert_eq!(parsed.faa_mode, original.faa_mode);

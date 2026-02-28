@@ -384,8 +384,7 @@ mod tests {
     #[test]
     fn test_parse_gsa_with_system_id() {
         // NMEA 4.1+ sentence with System ID field (1=GPS)
-        let s =
-            parse_nmea_sentence("$GNGSA,A,3,23,31,22,16,03,07,,,,,,,1.8,1.1,1.4,1*33").unwrap();
+        let s = parse_nmea_sentence("$GNGSA,A,3,23,31,22,16,03,07,,,,,,,1.8,1.1,1.4,1*33").unwrap();
         let gsa = parse_gsa(s).unwrap();
         assert_eq!(gsa.mode1, GsaMode1::Automatic);
         assert_eq!(gsa.mode2, GsaMode2::Fix3D);

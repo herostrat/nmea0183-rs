@@ -7,8 +7,8 @@ use nom::{
     number::complete::float,
 };
 
-use crate::{Error, NmeaSentence, ParseResult, SentenceType, parse::TEXT_PARAMETER_MAX_LEN};
 use crate::sentences::utils::array_string;
+use crate::{Error, NmeaSentence, ParseResult, SentenceType, parse::TEXT_PARAMETER_MAX_LEN};
 
 /// APB - Autopilot Sentence "B"
 ///
@@ -120,10 +120,9 @@ fn do_parse_apb(i: &str) -> IResult<&str, ApbData> {
     let (i, wp_id) = opt(is_not(",*")).parse(i)?;
     let wp_id = match wp_id {
         Some("") | None => None,
-        Some(s) => Some(
-            array_string::<TEXT_PARAMETER_MAX_LEN>(s)
-                .map_err(|_| nom::Err::Failure(nom::error::Error::new(i, nom::error::ErrorKind::Fail)))?,
-        ),
+        Some(s) => Some(array_string::<TEXT_PARAMETER_MAX_LEN>(s).map_err(|_| {
+            nom::Err::Failure(nom::error::Error::new(i, nom::error::ErrorKind::Fail))
+        })?),
     };
     let (i, _) = char(',').parse(i)?;
     // 11. Bearing, present position to destination
@@ -198,7 +197,11 @@ impl crate::generate::GenerateNmeaBody for ApbData {
         f.write_char('N')?;
         f.write_char(',')?;
         // 6. Arrival circle entered
-        f.write_char(if self.arrival_circle_entered { 'A' } else { 'V' })?;
+        f.write_char(if self.arrival_circle_entered {
+            'A'
+        } else {
+            'V'
+        })?;
         f.write_char(',')?;
         // 7. Perpendicular passed
         f.write_char(if self.perpendicular_passed { 'A' } else { 'V' })?;
@@ -209,7 +212,11 @@ impl crate::generate::GenerateNmeaBody for ApbData {
         }
         f.write_char(',')?;
         // 9. M/T
-        f.write_char(if self.bearing_orig_to_dest_magnetic { 'M' } else { 'T' })?;
+        f.write_char(if self.bearing_orig_to_dest_magnetic {
+            'M'
+        } else {
+            'T'
+        })?;
         f.write_char(',')?;
         // 10. Waypoint ID
         if let Some(ref wp) = self.waypoint_id {
@@ -222,7 +229,11 @@ impl crate::generate::GenerateNmeaBody for ApbData {
         }
         f.write_char(',')?;
         // 12. M/T
-        f.write_char(if self.bearing_pos_to_dest_magnetic { 'M' } else { 'T' })?;
+        f.write_char(if self.bearing_pos_to_dest_magnetic {
+            'M'
+        } else {
+            'T'
+        })?;
         f.write_char(',')?;
         // 13. Heading to dest
         if let Some(v) = self.heading_to_dest {
@@ -230,7 +241,11 @@ impl crate::generate::GenerateNmeaBody for ApbData {
         }
         f.write_char(',')?;
         // 14. M/T
-        f.write_char(if self.heading_to_dest_magnetic { 'M' } else { 'T' })
+        f.write_char(if self.heading_to_dest_magnetic {
+            'M'
+        } else {
+            'T'
+        })
     }
 }
 
@@ -243,10 +258,7 @@ mod tests {
 
     #[test]
     fn test_parse_apb() {
-        let s = parse_nmea_sentence(
-            "$GPAPB,A,A,0.10,R,N,V,V,011,M,DEST,011,M,011,M*3C",
-        )
-        .unwrap();
+        let s = parse_nmea_sentence("$GPAPB,A,A,0.10,R,N,V,V,011,M,DEST,011,M,011,M*3C").unwrap();
         assert_eq!(s.checksum, s.calc_checksum());
         let data = parse_apb(s).unwrap();
         assert!(data.status_warning);

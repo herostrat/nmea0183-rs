@@ -1,13 +1,10 @@
 use arrayvec::ArrayString;
 use nom::{
-    IResult, Parser as _,
-    bytes::complete::is_not,
-    character::complete::char,
-    combinator::opt,
+    IResult, Parser as _, bytes::complete::is_not, character::complete::char, combinator::opt,
 };
 
-use crate::{Error, NmeaSentence, ParseResult, SentenceType};
 use crate::sentences::utils::array_string;
+use crate::{Error, NmeaSentence, ParseResult, SentenceType};
 
 /// Maximum AIS payload length (6-bit encoded, up to 82 chars)
 const AIS_PAYLOAD_MAX_LEN: usize = 82;
@@ -155,8 +152,7 @@ mod tests {
 
     #[test]
     fn test_parse_vdm_single() {
-        let s = parse_nmea_sentence("!AIVDM,1,1,,A,13aEOK?P00PD2wVMdLDRhgvL289?,0*26")
-            .unwrap();
+        let s = parse_nmea_sentence("!AIVDM,1,1,,A,13aEOK?P00PD2wVMdLDRhgvL289?,0*26").unwrap();
         assert_eq!(s.checksum, s.calc_checksum());
         let data = parse_vdm(s).unwrap();
         assert_eq!(data.fragment_count, 1);
@@ -181,8 +177,7 @@ mod tests {
         assert_eq!(data1.message_id, Some(0));
         assert_eq!(data1.channel, Some('A'));
 
-        let s2 =
-            parse_nmea_sentence("!AIVDM,2,2,0,A,`0000000001,2*75").unwrap();
+        let s2 = parse_nmea_sentence("!AIVDM,2,2,0,A,`0000000001,2*75").unwrap();
         assert_eq!(s2.checksum, s2.calc_checksum());
         let data2 = parse_vdm(s2).unwrap();
         assert_eq!(data2.fragment_count, 2);
@@ -193,8 +188,7 @@ mod tests {
 
     #[test]
     fn test_parse_vdm_channel_b() {
-        let s = parse_nmea_sentence("!AIVDM,1,1,,B,13aGra0P00PHid>NK9<2FOvHR624,0*3E")
-            .unwrap();
+        let s = parse_nmea_sentence("!AIVDM,1,1,,B,13aGra0P00PHid>NK9<2FOvHR624,0*3E").unwrap();
         assert_eq!(s.checksum, s.calc_checksum());
         let data = parse_vdm(s).unwrap();
         assert_eq!(data.channel, Some('B'));
@@ -203,8 +197,7 @@ mod tests {
     #[test]
     fn test_parse_bsvdm() {
         // Non-AI talker (BS = base station)
-        let s = parse_nmea_sentence("!BSVDM,1,1,,A,B6CdCm0t3`tba35f@V9faHi7kP06,0*41")
-            .unwrap();
+        let s = parse_nmea_sentence("!BSVDM,1,1,,A,B6CdCm0t3`tba35f@V9faHi7kP06,0*41").unwrap();
         assert_eq!(s.checksum, s.calc_checksum());
         let data = parse_vdm(s).unwrap();
         assert_eq!(data.fragment_count, 1);

@@ -250,8 +250,14 @@ mod tests {
         assert_eq!(parsed.nsattelites, original.nsattelites);
         assert_relative_eq!(parsed.hdop.unwrap(), original.hdop.unwrap());
         assert_relative_eq!(parsed.alt.unwrap(), original.alt.unwrap());
-        assert_relative_eq!(parsed.geoid_separation.unwrap(), original.geoid_separation.unwrap());
-        assert_relative_eq!(parsed.age_of_differential.unwrap(), original.age_of_differential.unwrap());
+        assert_relative_eq!(
+            parsed.geoid_separation.unwrap(),
+            original.geoid_separation.unwrap()
+        );
+        assert_relative_eq!(
+            parsed.age_of_differential.unwrap(),
+            original.age_of_differential.unwrap()
+        );
         assert_eq!(parsed.station_id, original.station_id);
         assert_eq!(parsed.nav_status, original.nav_status);
     }

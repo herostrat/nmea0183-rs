@@ -77,11 +77,7 @@ pub fn write_lon(f: &mut dyn Write, lon: &Option<f64>) -> fmt::Result {
 }
 
 /// Write `lat,N/S,lon,E/W` or `,,,,` if both None.
-pub fn write_lat_lon(
-    f: &mut dyn Write,
-    lat: &Option<f64>,
-    lon: &Option<f64>,
-) -> fmt::Result {
+pub fn write_lat_lon(f: &mut dyn Write, lat: &Option<f64>, lon: &Option<f64>) -> fmt::Result {
     write_lat(f, lat)?;
     f.write_char(',')?;
     write_lon(f, lon)

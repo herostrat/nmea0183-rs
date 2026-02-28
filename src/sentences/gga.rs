@@ -310,12 +310,23 @@ mod tests {
         let parsed = parse_gga(s).unwrap();
         assert_eq!(parsed.fix_time, original.fix_time);
         assert_eq!(parsed.fix_type, original.fix_type);
-        assert_relative_eq!(parsed.latitude.unwrap(), original.latitude.unwrap(), epsilon = 1e-5);
-        assert_relative_eq!(parsed.longitude.unwrap(), original.longitude.unwrap(), epsilon = 1e-5);
+        assert_relative_eq!(
+            parsed.latitude.unwrap(),
+            original.latitude.unwrap(),
+            epsilon = 1e-5
+        );
+        assert_relative_eq!(
+            parsed.longitude.unwrap(),
+            original.longitude.unwrap(),
+            epsilon = 1e-5
+        );
         assert_eq!(parsed.fix_satellites, original.fix_satellites);
         assert_relative_eq!(parsed.hdop.unwrap(), original.hdop.unwrap());
         assert_relative_eq!(parsed.altitude.unwrap(), original.altitude.unwrap());
-        assert_relative_eq!(parsed.geoid_separation.unwrap(), original.geoid_separation.unwrap());
+        assert_relative_eq!(
+            parsed.geoid_separation.unwrap(),
+            original.geoid_separation.unwrap()
+        );
     }
 
     #[test]

@@ -7,8 +7,8 @@ use nom::{
     number::complete::float,
 };
 
-use crate::{Error, NmeaSentence, ParseResult, SentenceType, parse::TEXT_PARAMETER_MAX_LEN};
 use crate::sentences::utils::{array_string, parse_lat_lon};
+use crate::{Error, NmeaSentence, ParseResult, SentenceType, parse::TEXT_PARAMETER_MAX_LEN};
 
 /// RMB - Recommended Minimum Navigation Information
 ///
@@ -87,8 +87,9 @@ fn parse_waypoint_id(i: &str) -> IResult<&str, Option<ArrayString<TEXT_PARAMETER
     match id {
         Some("") | None => Ok((i, None)),
         Some(s) => {
-            let arr = array_string::<TEXT_PARAMETER_MAX_LEN>(s)
-                .map_err(|_| nom::Err::Failure(nom::error::Error::new(i, nom::error::ErrorKind::Fail)))?;
+            let arr = array_string::<TEXT_PARAMETER_MAX_LEN>(s).map_err(|_| {
+                nom::Err::Failure(nom::error::Error::new(i, nom::error::ErrorKind::Fail))
+            })?;
             Ok((i, Some(arr)))
         }
     }

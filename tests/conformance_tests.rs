@@ -3,11 +3,13 @@
 //! Covers checksum validation, sentence length limits, talker ID acceptance,
 //! field edge cases, AIS sentence handling, and error handling for malformed input.
 
-use nmea::{parse_nmea_sentence, parse_str, Error, ParseResult, SentenceType, SENTENCE_MAX_LEN};
+use nmea::{Error, ParseResult, SENTENCE_MAX_LEN, SentenceType, parse_nmea_sentence, parse_str};
 
 mod helpers;
 
-use helpers::{build_ais_sentence, build_sentence, build_sentence_bad_checksum, build_truncated_sentence};
+use helpers::{
+    build_ais_sentence, build_sentence, build_sentence_bad_checksum, build_truncated_sentence,
+};
 
 /// Helper macro to unwrap an error from `Result<NmeaSentence, Error>`, since
 /// `NmeaSentence` does not implement `Debug` and thus `expect_err` is unavailable.
@@ -30,15 +32,27 @@ mod checksum_tests {
     /// A valid GGA sentence must have matching calculated and embedded checksums.
     #[test]
     fn valid_checksum_gga() {
-        let sentence = build_sentence("GP", "GGA", "092750.000,5321.6802,N,00630.3372,W,1,8,1.03,61.7,M,55.2,M,,");
+        let sentence = build_sentence(
+            "GP",
+            "GGA",
+            "092750.000,5321.6802,N,00630.3372,W,1,8,1.03,61.7,M,55.2,M,,",
+        );
         let parsed = parse_nmea_sentence(&sentence).expect("should parse");
-        assert_eq!(parsed.checksum, parsed.calc_checksum(), "checksum must match for GGA");
+        assert_eq!(
+            parsed.checksum,
+            parsed.calc_checksum(),
+            "checksum must match for GGA"
+        );
     }
 
     /// A valid RMC sentence must have matching checksums.
     #[test]
     fn valid_checksum_rmc() {
-        let sentence = build_sentence("GP", "RMC", "225446.33,A,4916.45,N,12311.12,W,000.5,054.7,191194,020.3,E,A");
+        let sentence = build_sentence(
+            "GP",
+            "RMC",
+            "225446.33,A,4916.45,N,12311.12,W,000.5,054.7,191194,020.3,E,A",
+        );
         let parsed = parse_nmea_sentence(&sentence).expect("should parse");
         assert_eq!(parsed.checksum, parsed.calc_checksum());
     }
@@ -54,7 +68,11 @@ mod checksum_tests {
     /// A valid GSV sentence must have matching checksums.
     #[test]
     fn valid_checksum_gsv() {
-        let sentence = build_sentence("GP", "GSV", "3,1,12,01,49,196,41,03,71,278,32,06,02,323,27,11,21,196,39");
+        let sentence = build_sentence(
+            "GP",
+            "GSV",
+            "3,1,12,01,49,196,41,03,71,278,32,06,02,323,27,11,21,196,39",
+        );
         let parsed = parse_nmea_sentence(&sentence).expect("should parse");
         assert_eq!(parsed.checksum, parsed.calc_checksum());
     }
@@ -78,7 +96,11 @@ mod checksum_tests {
     /// A valid GNS sentence must have matching checksums.
     #[test]
     fn valid_checksum_gns() {
-        let sentence = build_sentence("GP", "GNS", "224749.00,3333.4268304,N,11153.3538273,W,D,19,0.6,406.110,-26.294,6.0,0138,S,");
+        let sentence = build_sentence(
+            "GP",
+            "GNS",
+            "224749.00,3333.4268304,N,11153.3538273,W,D,19,0.6,406.110,-26.294,6.0,0138,S,",
+        );
         let parsed = parse_nmea_sentence(&sentence).expect("should parse");
         assert_eq!(parsed.checksum, parsed.calc_checksum());
     }
@@ -143,7 +165,11 @@ mod checksum_tests {
     /// when parsed through parse_str (which validates checksums).
     #[test]
     fn bad_checksum_rejected_by_parse_str() {
-        let sentence = build_sentence_bad_checksum("GP", "GGA", "092750.000,5321.6802,N,00630.3372,W,1,8,1.03,61.7,M,55.2,M,,");
+        let sentence = build_sentence_bad_checksum(
+            "GP",
+            "GGA",
+            "092750.000,5321.6802,N,00630.3372,W,1,8,1.03,61.7,M,55.2,M,,",
+        );
         let err = parse_str(&sentence).expect_err("bad checksum should be rejected");
         assert!(
             matches!(err, Error::ChecksumMismatch { .. }),
@@ -156,7 +182,11 @@ mod checksum_tests {
     /// checksum field and calc_checksum() must disagree.
     #[test]
     fn bad_checksum_detected_via_nmea_sentence() {
-        let sentence = build_sentence_bad_checksum("GP", "RMC", "225446.33,A,4916.45,N,12311.12,W,000.5,054.7,191194,020.3,E,A");
+        let sentence = build_sentence_bad_checksum(
+            "GP",
+            "RMC",
+            "225446.33,A,4916.45,N,12311.12,W,000.5,054.7,191194,020.3,E,A",
+        );
         let parsed = parse_nmea_sentence(&sentence).expect("low-level parse should succeed");
         assert_ne!(
             parsed.checksum,
@@ -171,7 +201,11 @@ mod checksum_tests {
         let sentences = [
             build_sentence_bad_checksum("GP", "GSA", "A,3,,,,,,,,,,,,,99.99,99.99,99.99"),
             build_sentence_bad_checksum("GP", "VTG", "360.0,T,348.7,M,000.0,N,000.0,K"),
-            build_sentence_bad_checksum("GP", "GLL", "5107.0013414,N,11402.3279144,W,205412.00,A,A"),
+            build_sentence_bad_checksum(
+                "GP",
+                "GLL",
+                "5107.0013414,N,11402.3279144,W,205412.00,A,A",
+            ),
             build_sentence_bad_checksum("GP", "HDT", "274.07,T"),
         ];
         for sentence in &sentences {
@@ -263,10 +297,7 @@ mod sentence_length_tests {
     /// An empty string must produce a parsing error.
     #[test]
     fn empty_sentence_rejected() {
-        let err = unwrap_parse_err!(
-            parse_nmea_sentence(""),
-            "empty sentence should fail",
-        );
+        let err = unwrap_parse_err!(parse_nmea_sentence(""), "empty sentence should fail",);
         assert!(
             matches!(err, Error::ParsingError(_)),
             "expected ParsingError for empty input, got: {:?}",
@@ -277,10 +308,7 @@ mod sentence_length_tests {
     /// A very short incomplete sentence must produce a parsing error.
     #[test]
     fn minimal_incomplete_sentence_rejected() {
-        let err = unwrap_parse_err!(
-            parse_nmea_sentence("$"),
-            "single $ should fail",
-        );
+        let err = unwrap_parse_err!(parse_nmea_sentence("$"), "single $ should fail",);
         assert!(
             matches!(err, Error::ParsingError(_)),
             "expected ParsingError for '$', got: {:?}",
@@ -323,9 +351,16 @@ mod talker_id_tests {
         let fields = "092750.000,5321.6802,N,00630.3372,W,1,8,1.03,61.7,M,55.2,M,,";
         for talker_id in &talker_ids {
             let sentence = build_sentence(talker_id, "GGA", fields);
-            let parsed = parse_nmea_sentence(&sentence)
-                .unwrap_or_else(|e| panic!("talker ID '{}' should be accepted, got error: {:?}", talker_id, e));
-            assert_eq!(parsed.talker_id, *talker_id, "talker ID should be preserved");
+            let parsed = parse_nmea_sentence(&sentence).unwrap_or_else(|e| {
+                panic!(
+                    "talker ID '{}' should be accepted, got error: {:?}",
+                    talker_id, e
+                )
+            });
+            assert_eq!(
+                parsed.talker_id, *talker_id,
+                "talker ID should be preserved"
+            );
             assert_eq!(parsed.message_id, SentenceType::GGA);
         }
     }
@@ -355,8 +390,12 @@ mod talker_id_tests {
         let fields = "274.07,T";
         for talker_id in &talker_ids {
             let sentence = build_sentence(talker_id, "HDT", fields);
-            let parsed = parse_nmea_sentence(&sentence)
-                .unwrap_or_else(|e| panic!("talker ID '{}' should be accepted, got error: {:?}", talker_id, e));
+            let parsed = parse_nmea_sentence(&sentence).unwrap_or_else(|e| {
+                panic!(
+                    "talker ID '{}' should be accepted, got error: {:?}",
+                    talker_id, e
+                )
+            });
             assert_eq!(parsed.talker_id, *talker_id);
             assert_eq!(parsed.message_id, SentenceType::HDT);
         }
@@ -367,7 +406,11 @@ mod talker_id_tests {
     fn weather_instrument_talker_id() {
         let sentence = build_sentence("WI", "MWV", "041.1,R,01.0,N,A");
         let result = parse_str(&sentence);
-        assert!(result.is_ok(), "WI talker ID should work with MWV: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "WI talker ID should work with MWV: {:?}",
+            result.err()
+        );
     }
 
     /// Sounder / depth talker ID (SD) should work.
@@ -375,13 +418,21 @@ mod talker_id_tests {
     fn sounder_talker_id() {
         let sentence = build_sentence("SD", "DBT", "12.3,f,3.75,M,2.05,F");
         let result = parse_str(&sentence);
-        assert!(result.is_ok(), "SD talker ID should work with DBT: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "SD talker ID should work with DBT: {:?}",
+            result.err()
+        );
     }
 
     /// The talker ID field should be exactly preserved in parsing output.
     #[test]
     fn talker_id_preserved_in_output() {
-        let sentence = build_sentence("QZ", "GGA", "092750.000,5321.6802,N,00630.3372,W,1,8,1.03,61.7,M,55.2,M,,");
+        let sentence = build_sentence(
+            "QZ",
+            "GGA",
+            "092750.000,5321.6802,N,00630.3372,W,1,8,1.03,61.7,M,55.2,M,,",
+        );
         let parsed = parse_nmea_sentence(&sentence).expect("should parse");
         assert_eq!(parsed.talker_id, "QZ");
     }
@@ -421,7 +472,11 @@ mod field_edge_cases {
     fn hdt_empty_heading() {
         let sentence = build_sentence("GP", "HDT", ",T");
         let result = parse_str(&sentence);
-        assert!(result.is_ok(), "HDT with empty heading should parse: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "HDT with empty heading should parse: {:?}",
+            result.err()
+        );
     }
 
     /// A VTG sentence with all empty numeric fields should be parseable.
@@ -429,7 +484,11 @@ mod field_edge_cases {
     fn vtg_all_empty_numeric_fields() {
         let sentence = build_sentence("GP", "VTG", ",T,,M,,N,,K");
         let result = parse_str(&sentence);
-        assert!(result.is_ok(), "VTG with all empty fields should parse: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "VTG with all empty fields should parse: {:?}",
+            result.err()
+        );
     }
 
     /// An RMC sentence with many empty fields should parse
@@ -438,15 +497,27 @@ mod field_edge_cases {
     fn rmc_minimal_fields() {
         let sentence = build_sentence("GP", "RMC", "225446.33,A,4916.45,N,12311.12,W,,,191194,,,A");
         let result = parse_str(&sentence);
-        assert!(result.is_ok(), "RMC with some empty fields should parse: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "RMC with some empty fields should parse: {:?}",
+            result.err()
+        );
     }
 
     /// A GGA with zero satellites and invalid fix should still parse.
     #[test]
     fn gga_zero_satellites() {
-        let sentence = build_sentence("GP", "GGA", "133605.0,5521.75946,N,03731.93769,E,0,00,,,M,,M,,");
+        let sentence = build_sentence(
+            "GP",
+            "GGA",
+            "133605.0,5521.75946,N,03731.93769,E,0,00,,,M,,M,,",
+        );
         let result = parse_str(&sentence);
-        assert!(result.is_ok(), "GGA with 0 fix should parse: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "GGA with 0 fix should parse: {:?}",
+            result.err()
+        );
     }
 
     /// GSV with minimal satellite data (some fields empty) should parse.
@@ -454,7 +525,11 @@ mod field_edge_cases {
     fn gsv_partial_satellite_data() {
         let sentence = build_sentence("GP", "GSV", "1,1,01,36,,,");
         let result = parse_str(&sentence);
-        assert!(result.is_ok(), "GSV with partial sat data should parse: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "GSV with partial sat data should parse: {:?}",
+            result.err()
+        );
     }
 
     /// The data field of a parsed sentence should contain the expected content.
@@ -484,7 +559,11 @@ mod field_edge_cases {
         for (type_str, expected_type) in &sentence_types {
             let sentence = build_sentence("GP", type_str, ",,");
             let parsed = parse_nmea_sentence(&sentence).expect("should parse");
-            assert_eq!(parsed.message_id, *expected_type, "message_id should be {:?}", expected_type);
+            assert_eq!(
+                parsed.message_id, *expected_type,
+                "message_id should be {:?}",
+                expected_type
+            );
         }
     }
 }
@@ -511,7 +590,11 @@ mod ais_tests {
     fn ais_vdm_parse_str() {
         let sentence = build_ais_sentence("AI", "VDM", "1,1,,A,13aEOK?P00PD2wVMdLDRhgvL289?,0");
         let result = parse_str(&sentence);
-        assert!(result.is_ok(), "AIS VDM should parse via parse_str: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "AIS VDM should parse via parse_str: {:?}",
+            result.err()
+        );
     }
 
     /// An AIS VDO sentence should also parse with the `!` prefix.
@@ -555,7 +638,8 @@ mod error_handling {
     /// Non-ASCII characters must be rejected by parse_str with an ASCII error.
     #[test]
     fn non_ascii_rejected() {
-        let sentence = "$GPGGA,\u{00e9}92750.000,5321.6802,N,00630.3372,W,1,8,1.03,61.7,M,55.2,M,,*76";
+        let sentence =
+            "$GPGGA,\u{00e9}92750.000,5321.6802,N,00630.3372,W,1,8,1.03,61.7,M,55.2,M,,*76";
         let err = parse_str(sentence).expect_err("non-ASCII should be rejected");
         assert_eq!(err, Error::ASCII, "expected ASCII error, got: {:?}", err);
     }
@@ -587,7 +671,11 @@ mod error_handling {
     /// A sentence missing the `*` checksum delimiter should fail parsing.
     #[test]
     fn missing_checksum_delimiter() {
-        let sentence = build_truncated_sentence("GP", "GGA", "092750.000,5321.6802,N,00630.3372,W,1,8,1.03,61.7,M,55.2,M,,");
+        let sentence = build_truncated_sentence(
+            "GP",
+            "GGA",
+            "092750.000,5321.6802,N,00630.3372,W,1,8,1.03,61.7,M,55.2,M,,",
+        );
         let err = unwrap_parse_err!(
             parse_nmea_sentence(&sentence),
             "truncated sentence should fail",
@@ -602,7 +690,11 @@ mod error_handling {
     /// A truncated sentence should also be rejected by parse_str.
     #[test]
     fn truncated_sentence_rejected_by_parse_str() {
-        let sentence = build_truncated_sentence("GP", "RMC", "225446.33,A,4916.45,N,12311.12,W,000.5,054.7,191194,020.3,E,A");
+        let sentence = build_truncated_sentence(
+            "GP",
+            "RMC",
+            "225446.33,A,4916.45,N,12311.12,W,000.5,054.7,191194,020.3,E,A",
+        );
         let err = parse_str(&sentence).expect_err("truncated sentence should fail");
         assert!(matches!(err, Error::ParsingError(_)));
     }
@@ -620,30 +712,21 @@ mod error_handling {
     /// A sentence with just the header and no data/checksum should fail.
     #[test]
     fn header_only_rejected() {
-        let err = unwrap_parse_err!(
-            parse_nmea_sentence("$GPGGA"),
-            "header only should fail",
-        );
+        let err = unwrap_parse_err!(parse_nmea_sentence("$GPGGA"), "header only should fail",);
         assert!(matches!(err, Error::ParsingError(_)));
     }
 
     /// A completely garbage string should produce a parsing error.
     #[test]
     fn garbage_input_rejected() {
-        let err = unwrap_parse_err!(
-            parse_nmea_sentence("hello world"),
-            "garbage should fail",
-        );
+        let err = unwrap_parse_err!(parse_nmea_sentence("hello world"), "garbage should fail",);
         assert!(matches!(err, Error::ParsingError(_)));
     }
 
     /// A sentence with only `$` and talker ID but no sentence type should fail.
     #[test]
     fn incomplete_header_rejected() {
-        let err = unwrap_parse_err!(
-            parse_nmea_sentence("$GP"),
-            "incomplete header should fail",
-        );
+        let err = unwrap_parse_err!(parse_nmea_sentence("$GP"), "incomplete header should fail",);
         assert!(matches!(err, Error::ParsingError(_)));
     }
 
@@ -672,7 +755,10 @@ mod error_handling {
                 // This would mean BEC got a parser, which is fine
             }
             Err(e) => {
-                panic!("known sentence type BEC should not produce an error, got: {:?}", e);
+                panic!(
+                    "known sentence type BEC should not produce an error, got: {:?}",
+                    e
+                );
             }
         }
     }
@@ -703,7 +789,11 @@ mod build_sentence_tests {
     /// build_sentence must produce a sentence that parse_nmea_sentence accepts.
     #[test]
     fn build_sentence_roundtrip() {
-        let sentence = build_sentence("GP", "GGA", "092750.000,5321.6802,N,00630.3372,W,1,8,1.03,61.7,M,55.2,M,,");
+        let sentence = build_sentence(
+            "GP",
+            "GGA",
+            "092750.000,5321.6802,N,00630.3372,W,1,8,1.03,61.7,M,55.2,M,,",
+        );
         let parsed = parse_nmea_sentence(&sentence).expect("roundtrip should work");
         assert_eq!(parsed.checksum, parsed.calc_checksum());
         assert_eq!(parsed.talker_id, "GP");
@@ -722,7 +812,10 @@ mod build_sentence_tests {
     #[test]
     fn build_truncated_has_no_checksum() {
         let sentence = build_truncated_sentence("GP", "GGA", "test,data");
-        assert!(!sentence.contains('*'), "truncated sentence should have no '*'");
+        assert!(
+            !sentence.contains('*'),
+            "truncated sentence should have no '*'"
+        );
         assert!(parse_nmea_sentence(&sentence).is_err());
     }
 
@@ -730,7 +823,10 @@ mod build_sentence_tests {
     #[test]
     fn build_ais_sentence_format() {
         let sentence = build_ais_sentence("AI", "VDM", "1,1,,A,payload,0");
-        assert!(sentence.starts_with('!'), "AIS sentence must start with '!'");
+        assert!(
+            sentence.starts_with('!'),
+            "AIS sentence must start with '!'"
+        );
         let parsed = parse_nmea_sentence(&sentence).expect("AIS sentence should parse");
         assert_eq!(parsed.checksum, parsed.calc_checksum());
     }
@@ -747,13 +843,21 @@ mod sentence_type_parsing {
     /// parse_str when given valid data.
     #[test]
     fn parse_str_gga() {
-        let s = build_sentence("GP", "GGA", "092750.000,5321.6802,N,00630.3372,W,1,8,1.03,61.7,M,55.2,M,,");
+        let s = build_sentence(
+            "GP",
+            "GGA",
+            "092750.000,5321.6802,N,00630.3372,W,1,8,1.03,61.7,M,55.2,M,,",
+        );
         assert!(matches!(parse_str(&s), Ok(ParseResult::GGA(_))));
     }
 
     #[test]
     fn parse_str_rmc() {
-        let s = build_sentence("GP", "RMC", "225446.33,A,4916.45,N,12311.12,W,000.5,054.7,191194,020.3,E,A");
+        let s = build_sentence(
+            "GP",
+            "RMC",
+            "225446.33,A,4916.45,N,12311.12,W,000.5,054.7,191194,020.3,E,A",
+        );
         assert!(matches!(parse_str(&s), Ok(ParseResult::RMC(_))));
     }
 
@@ -765,7 +869,11 @@ mod sentence_type_parsing {
 
     #[test]
     fn parse_str_gsv() {
-        let s = build_sentence("GP", "GSV", "3,1,12,01,49,196,41,03,71,278,32,06,02,323,27,11,21,196,39");
+        let s = build_sentence(
+            "GP",
+            "GSV",
+            "3,1,12,01,49,196,41,03,71,278,32,06,02,323,27,11,21,196,39",
+        );
         assert!(matches!(parse_str(&s), Ok(ParseResult::GSV(_))));
     }
 
@@ -825,7 +933,11 @@ mod sentence_type_parsing {
 
     #[test]
     fn parse_str_gns() {
-        let s = build_sentence("GP", "GNS", "224749.00,3333.4268304,N,11153.3538273,W,D,19,0.6,406.110,-26.294,6.0,0138,S,");
+        let s = build_sentence(
+            "GP",
+            "GNS",
+            "224749.00,3333.4268304,N,11153.3538273,W,D,19,0.6,406.110,-26.294,6.0,0138,S,",
+        );
         assert!(matches!(parse_str(&s), Ok(ParseResult::GNS(_))));
     }
 }

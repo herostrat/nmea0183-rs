@@ -171,11 +171,10 @@ fn parse_field_str<const N: usize>(i: &str) -> IResult<&str, ArrayString<N>> {
 fn do_parse_dsc(i: &str) -> IResult<&str, DscData> {
     // Field 1: Format specifier (2-digit)
     let (i, format_specifier) = parse_two_digit(i)?;
-    let format_specifier =
-        format_specifier.ok_or(nom::Err::Failure(nom::error::Error::new(
-            i,
-            nom::error::ErrorKind::Digit,
-        )))?;
+    let format_specifier = format_specifier.ok_or(nom::Err::Failure(nom::error::Error::new(
+        i,
+        nom::error::ErrorKind::Digit,
+    )))?;
     let (i, _) = char(',').parse(i)?;
 
     // Field 2: MMSI (10 digits)
@@ -319,8 +318,8 @@ mod tests {
 
     #[test]
     fn test_parse_dsc_distress() {
-        let s = parse_nmea_sentence("$CDDSC,12,3380400790,12,06,00,1423108312,2019,,,S,E*6A")
-            .unwrap();
+        let s =
+            parse_nmea_sentence("$CDDSC,12,3380400790,12,06,00,1423108312,2019,,,S,E*6A").unwrap();
         assert_eq!(s.checksum, s.calc_checksum());
         let data = parse_dsc(s).unwrap();
 
@@ -345,8 +344,8 @@ mod tests {
 
     #[test]
     fn test_parse_dsc_distress_empty_category() {
-        let s = parse_nmea_sentence("$CDDSC,12,5031105200,,05,00,2380814428,1800,,,R,E*6C")
-            .unwrap();
+        let s =
+            parse_nmea_sentence("$CDDSC,12,5031105200,,05,00,2380814428,1800,,,R,E*6C").unwrap();
         assert_eq!(s.checksum, s.calc_checksum());
         let data = parse_dsc(s).unwrap();
 
@@ -366,8 +365,8 @@ mod tests {
 
     #[test]
     fn test_parse_dsc_position_report() {
-        let s = parse_nmea_sentence("$CDDSC,20,5031105200,08,21,26,2380814428,1800,,,B,E*77")
-            .unwrap();
+        let s =
+            parse_nmea_sentence("$CDDSC,20,5031105200,08,21,26,2380814428,1800,,,B,E*77").unwrap();
         assert_eq!(s.checksum, s.calc_checksum());
         let data = parse_dsc(s).unwrap();
 

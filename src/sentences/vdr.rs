@@ -1,8 +1,5 @@
 use nom::{
-    IResult, Parser as _,
-    character::complete::char,
-    combinator::opt,
-    number::complete::float,
+    IResult, Parser as _, character::complete::char, combinator::opt, number::complete::float,
 };
 
 use crate::{Error, NmeaSentence, ParseResult, SentenceType};

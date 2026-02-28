@@ -8,7 +8,7 @@
 //! 3. Roundtrip fidelity: Generate -> Parse -> Compare for all supported types
 
 use nmea::generate::{GenerateNmeaBody, generate_sentence};
-use nmea::{parse_nmea_sentence, parse_str, ParseResult, SentenceType};
+use nmea::{ParseResult, SentenceType, parse_nmea_sentence, parse_str};
 
 // ============================================================================
 // Helper functions
@@ -351,14 +351,8 @@ fn test_roundtrip_dbs() {
 
     let (orig, reparsed) = roundtrip_sentence("$SDDBS,12.3,f,3.75,M,2.05,F*37");
     if let (ParseResult::DBS(o), ParseResult::DBS(r)) = (&orig, &reparsed) {
-        assert_relative_eq!(
-            o.water_depth_feet.unwrap(),
-            r.water_depth_feet.unwrap()
-        );
-        assert_relative_eq!(
-            o.water_depth_meters.unwrap(),
-            r.water_depth_meters.unwrap()
-        );
+        assert_relative_eq!(o.water_depth_feet.unwrap(), r.water_depth_feet.unwrap());
+        assert_relative_eq!(o.water_depth_meters.unwrap(), r.water_depth_meters.unwrap());
         assert_relative_eq!(
             o.water_depth_fathoms.unwrap(),
             r.water_depth_fathoms.unwrap()
@@ -407,18 +401,12 @@ fn test_roundtrip_gga() {
         match (o.latitude, r.latitude) {
             (Some(ol), Some(rl)) => assert_relative_eq!(ol, rl, epsilon = 1e-4),
             (None, None) => {}
-            _ => panic!(
-                "Latitude mismatch: {:?} vs {:?}",
-                o.latitude, r.latitude
-            ),
+            _ => panic!("Latitude mismatch: {:?} vs {:?}", o.latitude, r.latitude),
         }
         match (o.longitude, r.longitude) {
             (Some(ol), Some(rl)) => assert_relative_eq!(ol, rl, epsilon = 1e-4),
             (None, None) => {}
-            _ => panic!(
-                "Longitude mismatch: {:?} vs {:?}",
-                o.longitude, r.longitude
-            ),
+            _ => panic!("Longitude mismatch: {:?} vs {:?}", o.longitude, r.longitude),
         }
     } else {
         panic!("Expected GGA, got {:?} and {:?}", orig, reparsed);
@@ -429,8 +417,9 @@ fn test_roundtrip_gga() {
 fn test_roundtrip_rmc() {
     use approx::assert_relative_eq;
 
-    let (orig, reparsed) =
-        roundtrip_sentence("$GPRMC,225446.33,A,4916.45,N,12311.12,W,000.5,054.7,191194,020.3,E,A*2B");
+    let (orig, reparsed) = roundtrip_sentence(
+        "$GPRMC,225446.33,A,4916.45,N,12311.12,W,000.5,054.7,191194,020.3,E,A*2B",
+    );
     if let (ParseResult::RMC(o), ParseResult::RMC(r)) = (&orig, &reparsed) {
         assert_eq!(o.fix_time, r.fix_time);
         assert_eq!(o.fix_date, r.fix_date);
@@ -480,8 +469,7 @@ fn test_roundtrip_gll() {
 fn test_roundtrip_vtg() {
     use approx::assert_relative_eq;
 
-    let (orig, reparsed) =
-        roundtrip_sentence("$GPVTG,360.0,T,348.7,M,000.0,N,000.0,K*43");
+    let (orig, reparsed) = roundtrip_sentence("$GPVTG,360.0,T,348.7,M,000.0,N,000.0,K*43");
     if let (ParseResult::VTG(o), ParseResult::VTG(r)) = (&orig, &reparsed) {
         assert_eq!(o.true_course, r.true_course);
         match (o.speed_over_ground, r.speed_over_ground) {
@@ -496,8 +484,7 @@ fn test_roundtrip_vtg() {
 
 #[test]
 fn test_roundtrip_gsa() {
-    let (orig, reparsed) =
-        roundtrip_sentence("$GPGSA,A,3,23,31,22,16,03,07,,,,,,,1.8,1.1,1.4*3E");
+    let (orig, reparsed) = roundtrip_sentence("$GPGSA,A,3,23,31,22,16,03,07,,,,,,,1.8,1.1,1.4*3E");
     if let (ParseResult::GSA(o), ParseResult::GSA(r)) = (&orig, &reparsed) {
         assert_eq!(o.mode1, r.mode1);
         assert_eq!(o.mode2, r.mode2);
@@ -533,8 +520,7 @@ fn test_roundtrip_gst() {
 fn test_roundtrip_gbs() {
     use approx::assert_relative_eq;
 
-    let (orig, reparsed) =
-        roundtrip_sentence("$GPGBS,182141.000,15.5,15.3,7.2,21,0.9,0.5,0.8*54");
+    let (orig, reparsed) = roundtrip_sentence("$GPGBS,182141.000,15.5,15.3,7.2,21,0.9,0.5,0.8*54");
     if let (ParseResult::GBS(o), ParseResult::GBS(r)) = (&orig, &reparsed) {
         assert_eq!(o.time, r.time);
         match (o.lat_error, r.lat_error) {
@@ -659,8 +645,7 @@ fn test_roundtrip_mwv() {
 fn test_roundtrip_mwd() {
     use approx::assert_relative_eq;
 
-    let (orig, reparsed) =
-        roundtrip_sentence("$WIMWD,270.0,T,265.5,M,10.2,N,5.3,M*6E");
+    let (orig, reparsed) = roundtrip_sentence("$WIMWD,270.0,T,265.5,M,10.2,N,5.3,M*6E");
     if let (ParseResult::MWD(o), ParseResult::MWD(r)) = (&orig, &reparsed) {
         assert_relative_eq!(
             o.wind_direction_true.unwrap(),
@@ -694,8 +679,7 @@ fn test_roundtrip_vwr() {
 fn test_roundtrip_vwt() {
     use approx::assert_relative_eq;
 
-    let (orig, reparsed) =
-        roundtrip_sentence("$IIVWT,030.,R,10.1,N,05.2,M,018.7,K*75");
+    let (orig, reparsed) = roundtrip_sentence("$IIVWT,030.,R,10.1,N,05.2,M,018.7,K*75");
     if let (ParseResult::VWT(o), ParseResult::VWT(r)) = (&orig, &reparsed) {
         assert_relative_eq!(o.wind_angle.unwrap(), r.wind_angle.unwrap());
         assert_relative_eq!(o.speed_knots.unwrap(), r.speed_knots.unwrap());
@@ -744,8 +728,7 @@ fn test_roundtrip_aam() {
 fn test_roundtrip_bod() {
     use approx::assert_relative_eq;
 
-    let (orig, reparsed) =
-        roundtrip_sentence("$GPBOD,045.,T,023.,M,DEST,START*01");
+    let (orig, reparsed) = roundtrip_sentence("$GPBOD,045.,T,023.,M,DEST,START*01");
     if let (ParseResult::BOD(o), ParseResult::BOD(r)) = (&orig, &reparsed) {
         assert_relative_eq!(o.bearing_true.unwrap(), r.bearing_true.unwrap());
         assert_relative_eq!(o.bearing_magnetic.unwrap(), r.bearing_magnetic.unwrap());
@@ -760,9 +743,8 @@ fn test_roundtrip_bod() {
 fn test_roundtrip_bwc() {
     use approx::assert_relative_eq;
 
-    let (orig, reparsed) = roundtrip_sentence(
-        "$GPBWC,220516,5130.02,N,00046.34,W,213.8,T,218.0,M,0004.6,N,EGLM*21",
-    );
+    let (orig, reparsed) =
+        roundtrip_sentence("$GPBWC,220516,5130.02,N,00046.34,W,213.8,T,218.0,M,0004.6,N,EGLM*21");
     if let (ParseResult::BWC(o), ParseResult::BWC(r)) = (&orig, &reparsed) {
         assert_eq!(o.fix_time, r.fix_time);
         match (o.latitude, r.latitude) {
@@ -783,8 +765,7 @@ fn test_roundtrip_bwc() {
 fn test_roundtrip_bww() {
     use approx::assert_relative_eq;
 
-    let (orig, reparsed) =
-        roundtrip_sentence("$GPBWW,213.8,T,218.0,M,TOWPT,FROMWPT*42");
+    let (orig, reparsed) = roundtrip_sentence("$GPBWW,213.8,T,218.0,M,TOWPT,FROMWPT*42");
     if let (ParseResult::BWW(o), ParseResult::BWW(r)) = (&orig, &reparsed) {
         assert_relative_eq!(o.true_bearing.unwrap(), r.true_bearing.unwrap());
         assert_relative_eq!(o.magnetic_bearing.unwrap(), r.magnetic_bearing.unwrap());
@@ -799,8 +780,7 @@ fn test_roundtrip_bww() {
 fn test_roundtrip_wnc() {
     use approx::assert_relative_eq;
 
-    let (orig, reparsed) =
-        roundtrip_sentence("$GPWNC,200.00,N,370.40,K,Dest,Origin*58");
+    let (orig, reparsed) = roundtrip_sentence("$GPWNC,200.00,N,370.40,K,Dest,Origin*58");
     if let (ParseResult::WNC(o), ParseResult::WNC(r)) = (&orig, &reparsed) {
         assert_relative_eq!(
             o.distance_nautical_miles.unwrap(),
@@ -849,10 +829,7 @@ fn test_roundtrip_xte() {
 
     let (orig, reparsed) = roundtrip_sentence("$GPXTE,A,A,0.67,L,N*6F");
     if let (ParseResult::XTE(o), ParseResult::XTE(r)) = (&orig, &reparsed) {
-        assert_relative_eq!(
-            o.cross_track_error.unwrap(),
-            r.cross_track_error.unwrap()
-        );
+        assert_relative_eq!(o.cross_track_error.unwrap(), r.cross_track_error.unwrap());
         assert_eq!(o.status_general, r.status_general);
         assert_eq!(o.status_cycle_lock, r.status_cycle_lock);
     } else {
@@ -883,8 +860,7 @@ fn test_roundtrip_rmb() {
 
 #[test]
 fn test_roundtrip_apa() {
-    let (orig, reparsed) =
-        roundtrip_sentence("$GPAPA,A,A,0.10,R,N,V,V,011,M,DEST,011,M*42");
+    let (orig, reparsed) = roundtrip_sentence("$GPAPA,A,A,0.10,R,N,V,V,011,M,DEST,011,M*42");
     if let (ParseResult::APA(o), ParseResult::APA(r)) = (&orig, &reparsed) {
         assert_eq!(o.status_warning, r.status_warning);
         assert_eq!(o.status_cycle_warning, r.status_cycle_warning);
@@ -896,8 +872,7 @@ fn test_roundtrip_apa() {
 
 #[test]
 fn test_roundtrip_apb() {
-    let (orig, reparsed) =
-        roundtrip_sentence("$GPAPB,A,A,0.10,R,N,V,V,011,M,DEST,011,M,011,M*3C");
+    let (orig, reparsed) = roundtrip_sentence("$GPAPB,A,A,0.10,R,N,V,V,011,M,DEST,011,M,011,M*3C");
     if let (ParseResult::APB(o), ParseResult::APB(r)) = (&orig, &reparsed) {
         assert_eq!(o.status_warning, r.status_warning);
         assert_eq!(o.status_cycle_lock, r.status_cycle_lock);
@@ -949,10 +924,7 @@ fn test_roundtrip_vdr() {
     let (orig, reparsed) = roundtrip_sentence("$IIVDR,180.0,T,175.5,M,1.5,N*32");
     if let (ParseResult::VDR(o), ParseResult::VDR(r)) = (&orig, &reparsed) {
         assert_relative_eq!(o.direction_true.unwrap(), r.direction_true.unwrap());
-        assert_relative_eq!(
-            o.direction_magnetic.unwrap(),
-            r.direction_magnetic.unwrap()
-        );
+        assert_relative_eq!(o.direction_magnetic.unwrap(), r.direction_magnetic.unwrap());
         assert_relative_eq!(o.speed.unwrap(), r.speed.unwrap());
     } else {
         panic!("Expected VDR, got {:?} and {:?}", orig, reparsed);
@@ -978,8 +950,7 @@ fn test_roundtrip_zda() {
 
 #[test]
 fn test_roundtrip_txt() {
-    let (orig, reparsed) =
-        roundtrip_sentence("$GNTXT,01,01,02,u-blox AG - www.u-blox.com*4E");
+    let (orig, reparsed) = roundtrip_sentence("$GNTXT,01,01,02,u-blox AG - www.u-blox.com*4E");
     if let (ParseResult::TXT(o), ParseResult::TXT(r)) = (&orig, &reparsed) {
         assert_eq!(o.count, r.count);
         assert_eq!(o.seq, r.seq);
@@ -1028,15 +999,11 @@ fn test_roundtrip_rmz() {
 fn test_roundtrip_ttm() {
     use approx::assert_relative_eq;
 
-    let (orig, reparsed) = roundtrip_sentence(
-        "$RATTM,01,0.2,190.8,T,12.1,109.7,T,0.1,0.5,N,TGT01,T,,100021.00,A*79",
-    );
+    let (orig, reparsed) =
+        roundtrip_sentence("$RATTM,01,0.2,190.8,T,12.1,109.7,T,0.1,0.5,N,TGT01,T,,100021.00,A*79");
     if let (ParseResult::TTM(o), ParseResult::TTM(r)) = (&orig, &reparsed) {
         assert_eq!(o.target_number, r.target_number);
-        assert_relative_eq!(
-            o.target_distance.unwrap(),
-            r.target_distance.unwrap()
-        );
+        assert_relative_eq!(o.target_distance.unwrap(), r.target_distance.unwrap());
         assert_eq!(o.target_name, r.target_name);
     } else {
         panic!("Expected TTM, got {:?} and {:?}", orig, reparsed);
@@ -1064,9 +1031,8 @@ fn test_roundtrip_alm() {
 
 #[test]
 fn test_roundtrip_gsv() {
-    let (orig, reparsed) = roundtrip_sentence(
-        "$GPGSV,3,1,12,01,49,196,41,03,71,278,32,06,02,323,27,11,21,196,39*72",
-    );
+    let (orig, reparsed) =
+        roundtrip_sentence("$GPGSV,3,1,12,01,49,196,41,03,71,278,32,06,02,323,27,11,21,196,39*72");
     if let (ParseResult::GSV(o), ParseResult::GSV(r)) = (&orig, &reparsed) {
         assert_eq!(o.number_of_sentences, r.number_of_sentences);
         assert_eq!(o.sentence_num, r.sentence_num);

@@ -101,12 +101,15 @@ fn parse_xdr_group(i: &str) -> IResult<&str, XdrMeasurement> {
     let take = name_str.len().min(16);
     name.push_str(&name_str[..take]);
 
-    Ok((i, XdrMeasurement {
-        transducer_type,
-        value,
-        units,
-        name,
-    }))
+    Ok((
+        i,
+        XdrMeasurement {
+            transducer_type,
+            value,
+            units,
+            name,
+        },
+    ))
 }
 
 fn do_parse_xdr(i: &str) -> IResult<&str, XdrData> {
@@ -256,7 +259,8 @@ mod tests {
                         s.push_str("ENV_TEMP");
                         s
                     },
-                }).unwrap();
+                })
+                .unwrap();
                 v
             },
         };
@@ -286,7 +290,8 @@ mod tests {
                         s.push_str("PITCH");
                         s
                     },
-                }).unwrap();
+                })
+                .unwrap();
                 v.push(XdrMeasurement {
                     transducer_type: Some('A'),
                     value: Some(-3.1),
@@ -296,7 +301,8 @@ mod tests {
                         s.push_str("ROLL");
                         s
                     },
-                }).unwrap();
+                })
+                .unwrap();
                 v
             },
         };

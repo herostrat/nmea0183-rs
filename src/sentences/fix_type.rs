@@ -22,7 +22,12 @@ impl FixType {
     pub fn is_valid(self) -> bool {
         match self {
             FixType::Simulation | FixType::Manual | FixType::Estimated | FixType::Invalid => false,
-            FixType::DGps | FixType::Gps | FixType::Rtk | FixType::FloatRtk | FixType::Pps | FixType::Sbas => true,
+            FixType::DGps
+            | FixType::Gps
+            | FixType::Rtk
+            | FixType::FloatRtk
+            | FixType::Pps
+            | FixType::Sbas => true,
         }
     }
 

@@ -14,7 +14,10 @@ fn test_signalk_sentences_parse() {
         // BOD - Bearing Origin to Destination
         ("BOD", "$GPBOD,045.,T,023.,M,DEST,START*01"),
         // BWC - Bearing & Distance to Waypoint (Great Circle)
-        ("BWC", "$GPBWC,225444,4917.24,N,12309.57,W,051.9,T,031.6,M,001.3,N,004*29"),
+        (
+            "BWC",
+            "$GPBWC,225444,4917.24,N,12309.57,W,051.9,T,031.6,M,001.3,N,004*29",
+        ),
         ("BWC", "$IIBWC,200321,,,,,119.5,T,129.5,M,22.10,N,1*1E"),
         // DBK - Depth Below Keel
         ("DBK", "$IIDBK,035.53,f,010.83,M,005.85,F*3C"),
@@ -29,20 +32,44 @@ fn test_signalk_sentences_parse() {
         ("DPT", "$IIDPT,4.1,1.0*44"),
         ("DPT", "$IIDPT,4.1,-1.0*69"),
         // GGA - Global Positioning System Fix Data
-        ("GGA", "$GPGGA,172814.0,3723.46587704,N,12202.26957864,W,2,6,1.2,18.893,M,-25.669,M,2.0,0031*4F"),
+        (
+            "GGA",
+            "$GPGGA,172814.0,3723.46587704,N,12202.26957864,W,2,6,1.2,18.893,M,-25.669,M,2.0,0031*4F",
+        ),
         // GLL - Geographic Position
         ("GLL", "$GPGLL,5958.613,N,02325.928,E,121022,A,D*40"),
         // GNS - Fix Data (with multi-char FAA mode indicator)
-        ("GNS", "$GPGNS,224749.00,3333.4268304,N,11153.3538273,W,ANN,19,0.6,406.110,-26.294,6.0,0138,S,*43"),
+        (
+            "GNS",
+            "$GPGNS,224749.00,3333.4268304,N,11153.3538273,W,ANN,19,0.6,406.110,-26.294,6.0,0138,S,*43",
+        ),
         // GSV - Satellites in View
-        ("GSV", "$GPGSV,3,1,09,07,16,321,37,08,29,281,33,10,29,143,35,16,75,216,35,0*6E"),
-        ("GSV", "$GPGSV,3,2,09,18,38,057,35,20,44,105,40,21,81,117,33,26,43,164,25,0*63"),
+        (
+            "GSV",
+            "$GPGSV,3,1,09,07,16,321,37,08,29,281,33,10,29,143,35,16,75,216,35,0*6E",
+        ),
+        (
+            "GSV",
+            "$GPGSV,3,2,09,18,38,057,35,20,44,105,40,21,81,117,33,26,43,164,25,0*63",
+        ),
         ("GSV", "$GPGSV,3,3,09,27,62,289,41,0*5B"),
-        ("GSV", "$GLGSV,3,1,10,65,14,112,18,71,15,018,11,72,25,069,31,77,10,181,30,0*79"),
-        ("GSV", "$GLGSV,3,2,10,78,52,221,38,79,44,310,28,80,00,342,,81,35,261,40,0*7E"),
+        (
+            "GSV",
+            "$GLGSV,3,1,10,65,14,112,18,71,15,018,11,72,25,069,31,77,10,181,30,0*79",
+        ),
+        (
+            "GSV",
+            "$GLGSV,3,2,10,78,52,221,38,79,44,310,28,80,00,342,,81,35,261,40,0*7E",
+        ),
         ("GSV", "$GLGSV,3,3,10,87,41,052,31,88,75,350,33,0*73"),
-        ("GSV", "$GAGSV,2,1,07,01,37,308,33,03,09,074,35,05,07,025,,13,85,237,31,0*7F"),
-        ("GSV", "$GAGSV,2,2,07,15,39,060,33,21,63,228,39,26,30,239,40,0*44"),
+        (
+            "GSV",
+            "$GAGSV,2,1,07,01,37,308,33,03,09,074,35,05,07,025,,13,85,237,31,0*7F",
+        ),
+        (
+            "GSV",
+            "$GAGSV,2,2,07,15,39,060,33,21,63,228,39,26,30,239,40,0*44",
+        ),
         // HDG - Heading, Deviation & Variation
         ("HDG", "$SDHDG,181.9,,,0.6,E*32"),
         ("HDG", "$HCHDG,51.5,,,,*73"),
@@ -54,8 +81,14 @@ fn test_signalk_sentences_parse() {
         // HSC - Heading Steering Command
         ("HSC", "$FTHSC,40.12,T,39.11,M*5E"),
         // MDA - Meteorological Composite
-        ("MDA", "$WIMDA,,I,+0.985,B,+03.1,C,+5.6,C,40.0,3.0,+3.4,C,90.0,T,85.0,M,10.0,N,,M*1A"),
-        ("MDA", "$WIMDA,29.92,I,,B,+03.1,C,+5.6,C,40.0,3.0,+3.4,C,90.0,T,85.0,M,,N,5.0,M*01"),
+        (
+            "MDA",
+            "$WIMDA,,I,+0.985,B,+03.1,C,+5.6,C,40.0,3.0,+3.4,C,90.0,T,85.0,M,10.0,N,,M*1A",
+        ),
+        (
+            "MDA",
+            "$WIMDA,29.92,I,,B,+03.1,C,+5.6,C,40.0,3.0,+3.4,C,90.0,T,85.0,M,,N,5.0,M*01",
+        ),
         // MTW - Water Temperature
         ("MTW", "$YXMTW,15.2,C*14"),
         // MWD - Wind Direction & Speed
@@ -66,9 +99,18 @@ fn test_signalk_sentences_parse() {
         ("MWV", "$IIMWV,074,T,05.85,N,A*2E"),
         ("MWV", "$IIMWV,336,R,13.41,N,A*22"),
         // RMC - Recommended Minimum Navigation Information
-        ("RMC", "$GPRMC,085412.000,A,5222.3198,N,00454.5784,E,0.58,251.34,030414,,,A*65"),
-        ("RMC", "$GPRMC,085412.000,A,5222.3198,N,00454.5784,E,,,030414,12,E*42"),
-        ("RMC", "$GPRMC,123519,A,4807.038,N,01131.000,E,022.4,084.4,230394,003.1,W*6A"),
+        (
+            "RMC",
+            "$GPRMC,085412.000,A,5222.3198,N,00454.5784,E,0.58,251.34,030414,,,A*65",
+        ),
+        (
+            "RMC",
+            "$GPRMC,085412.000,A,5222.3198,N,00454.5784,E,,,030414,12,E*42",
+        ),
+        (
+            "RMC",
+            "$GPRMC,123519,A,4807.038,N,01131.000,E,022.4,084.4,230394,003.1,W*6A",
+        ),
         // ROT - Rate of Turn
         ("ROT", "$GPROT,35.6,A*01"),
         // RSA - Rudder Sensor Angle
@@ -113,7 +155,10 @@ fn test_signalk_sentences_parse() {
 #[test]
 fn test_signalk_gga_values() {
     use approx::assert_relative_eq;
-    let result = parse_str("$GPGGA,172814.0,3723.46587704,N,12202.26957864,W,2,6,1.2,18.893,M,-25.669,M,2.0,0031*4F").unwrap();
+    let result = parse_str(
+        "$GPGGA,172814.0,3723.46587704,N,12202.26957864,W,2,6,1.2,18.893,M,-25.669,M,2.0,0031*4F",
+    )
+    .unwrap();
     if let nmea::ParseResult::GGA(data) = result {
         assert_relative_eq!(data.latitude.unwrap(), 37.391098, epsilon = 0.0001);
         assert_relative_eq!(data.longitude.unwrap(), -122.037826, epsilon = 0.0001);
@@ -130,7 +175,9 @@ fn test_signalk_gga_values() {
 #[test]
 fn test_signalk_rmc_values() {
     use approx::assert_relative_eq;
-    let result = parse_str("$GPRMC,085412.000,A,5222.3198,N,00454.5784,E,0.58,251.34,030414,,,A*65").unwrap();
+    let result =
+        parse_str("$GPRMC,085412.000,A,5222.3198,N,00454.5784,E,0.58,251.34,030414,,,A*65")
+            .unwrap();
     if let nmea::ParseResult::RMC(data) = result {
         assert_relative_eq!(data.lat.unwrap(), 52.37199666, epsilon = 0.0001);
         assert_relative_eq!(data.lon.unwrap(), 4.909640, epsilon = 0.0001);
@@ -144,7 +191,8 @@ fn test_signalk_rmc_values() {
 #[test]
 fn test_signalk_rmc_with_variation() {
     use approx::assert_relative_eq;
-    let result = parse_str("$GPRMC,085412.000,A,5222.3198,N,00454.5784,E,,,030414,12,E*42").unwrap();
+    let result =
+        parse_str("$GPRMC,085412.000,A,5222.3198,N,00454.5784,E,,,030414,12,E*42").unwrap();
     if let nmea::ParseResult::RMC(data) = result {
         assert_eq!(data.speed_over_ground, None);
         assert_eq!(data.true_course, None);
@@ -442,7 +490,10 @@ fn test_signalk_xte_values() {
 fn test_signalk_zda_values() {
     let result = parse_str("$GPZDA,160012.71,11,03,2004,-1,00*7D").unwrap();
     if let nmea::ParseResult::ZDA(data) = result {
-        assert_eq!(data.utc_time.unwrap().format("%H:%M:%S%.3f").to_string(), "16:00:12.710");
+        assert_eq!(
+            data.utc_time.unwrap().format("%H:%M:%S%.3f").to_string(),
+            "16:00:12.710"
+        );
         assert_eq!(data.day.unwrap(), 11);
         assert_eq!(data.month.unwrap(), 3);
         assert_eq!(data.year.unwrap(), 2004);
@@ -500,7 +551,10 @@ fn test_signalk_gns_multi_char_mode() {
     .unwrap();
     if let nmea::ParseResult::GNS(data) = result {
         assert_eq!(data.faa_modes.len(), 3);
-        assert_eq!(data.faa_modes.primary(), nmea::sentences::FaaMode::Autonomous);
+        assert_eq!(
+            data.faa_modes.primary(),
+            nmea::sentences::FaaMode::Autonomous
+        );
         assert_eq!(
             data.faa_modes.get(1),
             Some(&nmea::sentences::FaaMode::DataNotValid)
@@ -521,5 +575,8 @@ fn test_signalk_gns_multi_char_mode() {
 fn test_signalk_invalid_checksum_rejected() {
     // From signalk's invalid_checksum test: ROT with wrong checksum *FF
     let result = parse_str("$GPROT,35.6,A*FF");
-    assert!(result.is_err(), "Should reject sentence with invalid checksum");
+    assert!(
+        result.is_err(),
+        "Should reject sentence with invalid checksum"
+    );
 }

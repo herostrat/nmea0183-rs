@@ -87,7 +87,14 @@ impl crate::generate::GenerateNmeaBody for TxtData {
     }
 
     fn write_body(&self, f: &mut dyn core::fmt::Write) -> core::fmt::Result {
-        write!(f, "{:02},{:02},{:02},{}", self.count, self.seq, self.text_ident, self.text.as_str())
+        write!(
+            f,
+            "{:02},{:02},{:02},{}",
+            self.count,
+            self.seq,
+            self.text_ident,
+            self.text.as_str()
+        )
     }
 }
 

@@ -161,9 +161,18 @@ mod tests {
         assert_relative_eq!(parsed.lat_error.unwrap(), original.lat_error.unwrap());
         assert_relative_eq!(parsed.lon_error.unwrap(), original.lon_error.unwrap());
         assert_relative_eq!(parsed.alt_error.unwrap(), original.alt_error.unwrap());
-        assert_eq!(parsed.most_likely_failed_sat, original.most_likely_failed_sat);
-        assert_relative_eq!(parsed.missed_probability.unwrap(), original.missed_probability.unwrap());
-        assert_relative_eq!(parsed.bias_estimate.unwrap(), original.bias_estimate.unwrap());
+        assert_eq!(
+            parsed.most_likely_failed_sat,
+            original.most_likely_failed_sat
+        );
+        assert_relative_eq!(
+            parsed.missed_probability.unwrap(),
+            original.missed_probability.unwrap()
+        );
+        assert_relative_eq!(
+            parsed.bias_estimate.unwrap(),
+            original.bias_estimate.unwrap()
+        );
         assert_relative_eq!(
             parsed.bias_standard_deviation.unwrap(),
             original.bias_standard_deviation.unwrap()
