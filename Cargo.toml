@@ -106,7 +106,7 @@ ais = ["VDM"]
 ## Current
 current = ["VDR"]
 ## Vendor-specific messages
-vendor-specific = ["RMZ"]
+vendor-specific = ["RMZ", "STALK"]
 ## Other
 other = ["HDT", "MDA", "MWV", "TXT", "ZDA"]
 
@@ -243,6 +243,10 @@ RPM = []
 ## Rudder Sensor Angle
 ## (feature: `equipment`)
 RSA = []
+
+## Raymarine SeaTalk1 Datagram ($STALK)
+## (feature: `vendor-specific`)
+STALK = []
 
 ## Tracked target message
 ## (feature: `radar`)

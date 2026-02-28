@@ -33,6 +33,7 @@ pub mod rmz;
 pub mod rot;
 pub mod rpm;
 pub mod rsa;
+pub mod stalk;
 pub mod ttm;
 pub mod txt;
 pub mod utils;
@@ -94,6 +95,7 @@ pub use {
     rot::{RotData, parse_rot},
     rpm::{RpmData, RpmSource, parse_rpm},
     rsa::{RsaData, parse_rsa},
+    stalk::{StalkData, parse_stalk},
     ttm::{
         TtmAngle, TtmData, TtmDistanceUnit, TtmReference, TtmStatus, TtmTypeOfAcquisition,
         parse_ttm,

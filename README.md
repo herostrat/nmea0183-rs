@@ -8,7 +8,7 @@
 
 ## NMEA 0183 sentence parser and generator
 
-Supports parsing and generating 49 sentence types across GNSS, navigation, water/depth, wind, heading, equipment, radar, sensor/transducer, safety/DSC and AIS categories.
+Supports parsing and generating 50 sentence types across GNSS, navigation, water/depth, wind, heading, equipment, radar, sensor/transducer, safety/DSC and AIS categories.
 
 Supported sentences (alphabetically ordered):
 
@@ -45,6 +45,7 @@ Supported sentences (alphabetically ordered):
 - `ROT` - Rate Of Turn (feature: `heading`)
 - `RPM` - Revolutions (feature: `equipment`)
 - `RSA` - Rudder Sensor Angle (feature: `equipment`)
+- `STALK` - Raymarine SeaTalk1 Datagram (feature: `vendor-specific`)
 - `TTM` - Tracked target message (feature: `radar`)
 - `TXT` - * Text message (feature: `other`)
 - `VDM` - AIS VHF Data-Link Message (feature: `ais`)

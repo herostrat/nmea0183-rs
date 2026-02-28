@@ -392,6 +392,7 @@ impl<'a> Nmea {
             | ParseResult::MDA(_)
             | ParseResult::ROT(_)
             | ParseResult::RSA(_)
+            | ParseResult::STALK(_)
             | ParseResult::VDR(_)
             | ParseResult::VHW(_)
             | ParseResult::VLW(_)
@@ -808,6 +809,8 @@ define_sentence_type_enum! {
         ACK,
         ACS,
         AIR,
+        /// ALK - SeaTalk1 Datagram (used with talker ID "ST" → $STALK)
+        ALK,
         /// ALM - GPS Almanac Data
         ///
         /// <https://gpsd.gitlab.io/gpsd/NMEA.html#_alm_gps_almanac_data>

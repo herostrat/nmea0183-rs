@@ -126,6 +126,7 @@ fn generate_from_parse_result(talker_id: &str, result: &ParseResult) -> String {
         ParseResult::ROT(data) => generate_sentence(talker_id, data, &mut buf).unwrap(),
         ParseResult::RPM(data) => generate_sentence(talker_id, data, &mut buf).unwrap(),
         ParseResult::RSA(data) => generate_sentence(talker_id, data, &mut buf).unwrap(),
+        ParseResult::STALK(data) => generate_sentence(talker_id, data, &mut buf).unwrap(),
         ParseResult::TTM(data) => generate_sentence(talker_id, data, &mut buf).unwrap(),
         ParseResult::TXT(data) => generate_sentence(talker_id, data, &mut buf).unwrap(),
         ParseResult::VDM(data) | ParseResult::VDO(data) => {

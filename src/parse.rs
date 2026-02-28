@@ -139,6 +139,7 @@ pub enum ParseResult {
     ROT(RotData),
     RPM(RpmData),
     RSA(RsaData),
+    STALK(StalkData),
     TTM(TtmData),
     TXT(TxtData),
     VDM(VdmData),
@@ -214,6 +215,7 @@ impl From<&ParseResult> for SentenceType {
             ParseResult::ZDA(_) => SentenceType::ZDA,
             ParseResult::DPT(_) => SentenceType::DPT,
             ParseResult::DSC(_) => SentenceType::DSC,
+            ParseResult::STALK(_) => SentenceType::ALK,
             ParseResult::Unsupported(sentence_type) => *sentence_type,
         }
     }
@@ -523,6 +525,15 @@ pub fn parse_str(sentence_input: &str) -> Result<ParseResult, Error<'_>> {
                 cfg_if! {
                     if #[cfg(feature = "RSA")] {
                         parse_rsa(nmea_sentence).map(Into::into)
+                    } else {
+                        return Err(Error::DisabledSentence);
+                    }
+                }
+            }
+            SentenceType::ALK => {
+                cfg_if! {
+                    if #[cfg(feature = "STALK")] {
+                        parse_stalk(nmea_sentence).map(Into::into)
                     } else {
                         return Err(Error::DisabledSentence);
                     }

@@ -91,6 +91,8 @@ fn test_all_supported_messages() {
         (SentenceType::RPM, "$IIRPM,E,1,2418.2,10.5,A*5F"),
         // RSA
         (SentenceType::RSA, "$IIRSA,10.5,A,,V*4D"),
+        // STALK
+        (SentenceType::ALK, "$STALK,52,A1,00,00*36"),
         // VDM
         (SentenceType::VDM, "!AIVDM,1,1,,A,13aEOK?P00PD2wVMdLDRhgvL289?,0*26"),
         // VDR
