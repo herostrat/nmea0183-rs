@@ -256,7 +256,7 @@ pub fn parse_str(sentence_input: &str) -> Result<ParseResult, Error<'_>> {
                     if #[cfg(feature = "AAM")] {
                         parse_aam(nmea_sentence).map(ParseResult::AAM)
                     } else {
-                        return Err(Error::DisabledSentence);
+                        return Err(Error::DisabledSentence(nmea_sentence.message_id));
                     }
                 }
             }
@@ -265,7 +265,7 @@ pub fn parse_str(sentence_input: &str) -> Result<ParseResult, Error<'_>> {
                     if #[cfg(feature = "ALM")] {
                         parse_alm(nmea_sentence).map(ParseResult::ALM)
                     } else {
-                        return Err(Error::DisabledSentence);
+                        return Err(Error::DisabledSentence(nmea_sentence.message_id));
                     }
                 }
             }
@@ -274,7 +274,7 @@ pub fn parse_str(sentence_input: &str) -> Result<ParseResult, Error<'_>> {
                     if #[cfg(feature = "APA")] {
                         parse_apa(nmea_sentence).map(ParseResult::APA)
                     } else {
-                        return Err(Error::DisabledSentence);
+                        return Err(Error::DisabledSentence(nmea_sentence.message_id));
                     }
                 }
             }
@@ -283,7 +283,7 @@ pub fn parse_str(sentence_input: &str) -> Result<ParseResult, Error<'_>> {
                     if #[cfg(feature = "APB")] {
                         parse_apb(nmea_sentence).map(Into::into)
                     } else {
-                        return Err(Error::DisabledSentence);
+                        return Err(Error::DisabledSentence(nmea_sentence.message_id));
                     }
                 }
             }
@@ -292,7 +292,7 @@ pub fn parse_str(sentence_input: &str) -> Result<ParseResult, Error<'_>> {
                     if #[cfg(feature = "BOD")] {
                         parse_bod(nmea_sentence).map(ParseResult::BOD)
                     } else {
-                        return Err(Error::DisabledSentence);
+                        return Err(Error::DisabledSentence(nmea_sentence.message_id));
                     }
                 }
             }
@@ -301,7 +301,7 @@ pub fn parse_str(sentence_input: &str) -> Result<ParseResult, Error<'_>> {
                     if #[cfg(feature = "BWC")] {
                         parse_bwc(nmea_sentence).map(ParseResult::BWC)
                     } else {
-                        return Err(Error::DisabledSentence);
+                        return Err(Error::DisabledSentence(nmea_sentence.message_id));
                     }
                 }
             }
@@ -310,7 +310,7 @@ pub fn parse_str(sentence_input: &str) -> Result<ParseResult, Error<'_>> {
                     if #[cfg(feature = "BWW")] {
                         parse_bww(nmea_sentence).map(ParseResult::BWW)
                     } else {
-                        return Err(Error::DisabledSentence);
+                        return Err(Error::DisabledSentence(nmea_sentence.message_id));
                     }
                 }
             }
@@ -319,7 +319,7 @@ pub fn parse_str(sentence_input: &str) -> Result<ParseResult, Error<'_>> {
                     if #[cfg(feature = "DBK")] {
                         parse_dbk(nmea_sentence).map(Into::into)
                     } else {
-                        return Err(Error::DisabledSentence);
+                        return Err(Error::DisabledSentence(nmea_sentence.message_id));
                     }
                 }
             }
@@ -328,7 +328,7 @@ pub fn parse_str(sentence_input: &str) -> Result<ParseResult, Error<'_>> {
                     if #[cfg(feature = "DBS")] {
                         parse_dbs(nmea_sentence).map(Into::into)
                     } else {
-                        return Err(Error::DisabledSentence);
+                        return Err(Error::DisabledSentence(nmea_sentence.message_id));
                     }
                 }
             }
@@ -337,7 +337,7 @@ pub fn parse_str(sentence_input: &str) -> Result<ParseResult, Error<'_>> {
                     if #[cfg(feature = "DBT")] {
                         parse_dbt(nmea_sentence).map(Into::into)
                     } else {
-                        return Err(Error::DisabledSentence);
+                        return Err(Error::DisabledSentence(nmea_sentence.message_id));
                     }
                 }
             }
@@ -346,7 +346,7 @@ pub fn parse_str(sentence_input: &str) -> Result<ParseResult, Error<'_>> {
                     if #[cfg(feature = "GBS")] {
                         parse_gbs(nmea_sentence).map(ParseResult::GBS)
                     } else {
-                        return Err(Error::DisabledSentence);
+                        return Err(Error::DisabledSentence(nmea_sentence.message_id));
                     }
                 }
             }
@@ -355,7 +355,7 @@ pub fn parse_str(sentence_input: &str) -> Result<ParseResult, Error<'_>> {
                     if #[cfg(feature = "GGA")] {
                         parse_gga(nmea_sentence).map(ParseResult::GGA)
                     } else {
-                        return Err(Error::DisabledSentence);
+                        return Err(Error::DisabledSentence(nmea_sentence.message_id));
                     }
                 }
             }
@@ -364,7 +364,7 @@ pub fn parse_str(sentence_input: &str) -> Result<ParseResult, Error<'_>> {
                     if #[cfg(feature = "GLL")] {
                         parse_gll(nmea_sentence).map(ParseResult::GLL)
                     } else {
-                        return Err(Error::DisabledSentence);
+                        return Err(Error::DisabledSentence(nmea_sentence.message_id));
                     }
                 }
             }
@@ -373,7 +373,7 @@ pub fn parse_str(sentence_input: &str) -> Result<ParseResult, Error<'_>> {
                     if #[cfg(feature = "GNS")] {
                         parse_gns(nmea_sentence).map(ParseResult::GNS)
                     } else {
-                        return Err(Error::DisabledSentence);
+                        return Err(Error::DisabledSentence(nmea_sentence.message_id));
                     }
                 }
             }
@@ -382,7 +382,7 @@ pub fn parse_str(sentence_input: &str) -> Result<ParseResult, Error<'_>> {
                     if #[cfg(feature = "GSA")] {
                         parse_gsa(nmea_sentence).map(ParseResult::GSA)
                     } else {
-                        return Err(Error::DisabledSentence);
+                        return Err(Error::DisabledSentence(nmea_sentence.message_id));
                     }
                 }
             }
@@ -391,7 +391,7 @@ pub fn parse_str(sentence_input: &str) -> Result<ParseResult, Error<'_>> {
                     if #[cfg(feature = "GST")] {
                         parse_gst(nmea_sentence).map(ParseResult::GST)
                     } else {
-                        return Err(Error::DisabledSentence);
+                        return Err(Error::DisabledSentence(nmea_sentence.message_id));
                     }
                 }
             }
@@ -400,7 +400,7 @@ pub fn parse_str(sentence_input: &str) -> Result<ParseResult, Error<'_>> {
                     if #[cfg(feature = "GSV")] {
                         parse_gsv(nmea_sentence).map(ParseResult::GSV)
                     } else {
-                        return Err(Error::DisabledSentence);
+                        return Err(Error::DisabledSentence(nmea_sentence.message_id));
                     }
                 }
             }
@@ -409,7 +409,7 @@ pub fn parse_str(sentence_input: &str) -> Result<ParseResult, Error<'_>> {
                     if #[cfg(feature = "HDG")] {
                         parse_hdg(nmea_sentence).map(Into::into)
                     } else {
-                        return Err(Error::DisabledSentence);
+                        return Err(Error::DisabledSentence(nmea_sentence.message_id));
                     }
                 }
             }
@@ -418,7 +418,7 @@ pub fn parse_str(sentence_input: &str) -> Result<ParseResult, Error<'_>> {
                     if #[cfg(feature = "HDM")] {
                         parse_hdm(nmea_sentence).map(Into::into)
                     } else {
-                        return Err(Error::DisabledSentence);
+                        return Err(Error::DisabledSentence(nmea_sentence.message_id));
                     }
                 }
             }
@@ -427,7 +427,7 @@ pub fn parse_str(sentence_input: &str) -> Result<ParseResult, Error<'_>> {
                     if #[cfg(feature = "HDT")] {
                         parse_hdt(nmea_sentence).map(ParseResult::HDT)
                     } else {
-                        return Err(Error::DisabledSentence);
+                        return Err(Error::DisabledSentence(nmea_sentence.message_id));
                     }
                 }
             }
@@ -436,7 +436,7 @@ pub fn parse_str(sentence_input: &str) -> Result<ParseResult, Error<'_>> {
                     if #[cfg(feature = "HSC")] {
                         parse_hsc(nmea_sentence).map(Into::into)
                     } else {
-                        return Err(Error::DisabledSentence);
+                        return Err(Error::DisabledSentence(nmea_sentence.message_id));
                     }
                 }
             }
@@ -445,7 +445,7 @@ pub fn parse_str(sentence_input: &str) -> Result<ParseResult, Error<'_>> {
                     if #[cfg(feature = "MDA")] {
                         parse_mda(nmea_sentence).map(ParseResult::MDA)
                     } else {
-                        return Err(Error::DisabledSentence);
+                        return Err(Error::DisabledSentence(nmea_sentence.message_id));
                     }
                 }
             }
@@ -454,7 +454,7 @@ pub fn parse_str(sentence_input: &str) -> Result<ParseResult, Error<'_>> {
                     if #[cfg(feature = "MTW")] {
                         parse_mtw(nmea_sentence).map(ParseResult::MTW)
                     } else {
-                        return Err(Error::DisabledSentence);
+                        return Err(Error::DisabledSentence(nmea_sentence.message_id));
                     }
                 }
             }
@@ -463,7 +463,7 @@ pub fn parse_str(sentence_input: &str) -> Result<ParseResult, Error<'_>> {
                     if #[cfg(feature = "MWD")] {
                         parse_mwd(nmea_sentence).map(Into::into)
                     } else {
-                        return Err(Error::DisabledSentence);
+                        return Err(Error::DisabledSentence(nmea_sentence.message_id));
                     }
                 }
             }
@@ -472,7 +472,7 @@ pub fn parse_str(sentence_input: &str) -> Result<ParseResult, Error<'_>> {
                     if #[cfg(feature = "MWV")] {
                         parse_mwv(nmea_sentence).map(ParseResult::MWV)
                     } else {
-                        return Err(Error::DisabledSentence);
+                        return Err(Error::DisabledSentence(nmea_sentence.message_id));
                     }
                 }
             }
@@ -481,7 +481,7 @@ pub fn parse_str(sentence_input: &str) -> Result<ParseResult, Error<'_>> {
                     if #[cfg(feature = "RMB")] {
                         parse_rmb(nmea_sentence).map(Into::into)
                     } else {
-                        return Err(Error::DisabledSentence);
+                        return Err(Error::DisabledSentence(nmea_sentence.message_id));
                     }
                 }
             }
@@ -490,7 +490,7 @@ pub fn parse_str(sentence_input: &str) -> Result<ParseResult, Error<'_>> {
                     if #[cfg(feature = "RMC")] {
                         parse_rmc(nmea_sentence).map(ParseResult::RMC)
                     } else {
-                        return Err(Error::DisabledSentence);
+                        return Err(Error::DisabledSentence(nmea_sentence.message_id));
                     }
                 }
             }
@@ -499,7 +499,7 @@ pub fn parse_str(sentence_input: &str) -> Result<ParseResult, Error<'_>> {
                     if #[cfg(feature = "RMZ")] {
                         parse_pgrmz(nmea_sentence).map(ParseResult::PGRMZ)
                     } else {
-                        return Err(Error::DisabledSentence);
+                        return Err(Error::DisabledSentence(nmea_sentence.message_id));
                     }
                 }
             }
@@ -508,7 +508,7 @@ pub fn parse_str(sentence_input: &str) -> Result<ParseResult, Error<'_>> {
                     if #[cfg(feature = "ROT")] {
                         parse_rot(nmea_sentence).map(Into::into)
                     } else {
-                        return Err(Error::DisabledSentence);
+                        return Err(Error::DisabledSentence(nmea_sentence.message_id));
                     }
                 }
             }
@@ -517,7 +517,7 @@ pub fn parse_str(sentence_input: &str) -> Result<ParseResult, Error<'_>> {
                     if #[cfg(feature = "RPM")] {
                         parse_rpm(nmea_sentence).map(Into::into)
                     } else {
-                        return Err(Error::DisabledSentence);
+                        return Err(Error::DisabledSentence(nmea_sentence.message_id));
                     }
                 }
             }
@@ -526,7 +526,7 @@ pub fn parse_str(sentence_input: &str) -> Result<ParseResult, Error<'_>> {
                     if #[cfg(feature = "RSA")] {
                         parse_rsa(nmea_sentence).map(Into::into)
                     } else {
-                        return Err(Error::DisabledSentence);
+                        return Err(Error::DisabledSentence(nmea_sentence.message_id));
                     }
                 }
             }
@@ -535,7 +535,7 @@ pub fn parse_str(sentence_input: &str) -> Result<ParseResult, Error<'_>> {
                     if #[cfg(feature = "STALK")] {
                         parse_stalk(nmea_sentence).map(Into::into)
                     } else {
-                        return Err(Error::DisabledSentence);
+                        return Err(Error::DisabledSentence(nmea_sentence.message_id));
                     }
                 }
             }
@@ -544,7 +544,7 @@ pub fn parse_str(sentence_input: &str) -> Result<ParseResult, Error<'_>> {
                     if #[cfg(feature = "TTM")] {
                         parse_ttm(nmea_sentence).map(ParseResult::TTM)
                     } else {
-                        return Err(Error::DisabledSentence);
+                        return Err(Error::DisabledSentence(nmea_sentence.message_id));
                     }
                 }
             }
@@ -553,7 +553,7 @@ pub fn parse_str(sentence_input: &str) -> Result<ParseResult, Error<'_>> {
                     if #[cfg(feature = "TXT")] {
                         parse_txt(nmea_sentence).map(ParseResult::TXT)
                     } else {
-                        return Err(Error::DisabledSentence);
+                        return Err(Error::DisabledSentence(nmea_sentence.message_id));
                     }
                 }
             }
@@ -562,7 +562,7 @@ pub fn parse_str(sentence_input: &str) -> Result<ParseResult, Error<'_>> {
                     if #[cfg(feature = "VDM")] {
                         parse_vdm(nmea_sentence).map(Into::into)
                     } else {
-                        return Err(Error::DisabledSentence);
+                        return Err(Error::DisabledSentence(nmea_sentence.message_id));
                     }
                 }
             }
@@ -571,7 +571,7 @@ pub fn parse_str(sentence_input: &str) -> Result<ParseResult, Error<'_>> {
                     if #[cfg(feature = "VDR")] {
                         parse_vdr(nmea_sentence).map(Into::into)
                     } else {
-                        return Err(Error::DisabledSentence);
+                        return Err(Error::DisabledSentence(nmea_sentence.message_id));
                     }
                 }
             }
@@ -580,7 +580,7 @@ pub fn parse_str(sentence_input: &str) -> Result<ParseResult, Error<'_>> {
                     if #[cfg(feature = "VHW")] {
                         parse_vhw(nmea_sentence).map(ParseResult::VHW)
                     } else {
-                        return Err(Error::DisabledSentence);
+                        return Err(Error::DisabledSentence(nmea_sentence.message_id));
                     }
                 }
             }
@@ -589,7 +589,7 @@ pub fn parse_str(sentence_input: &str) -> Result<ParseResult, Error<'_>> {
                     if #[cfg(feature = "VLW")] {
                         parse_vlw(nmea_sentence).map(Into::into)
                     } else {
-                        return Err(Error::DisabledSentence);
+                        return Err(Error::DisabledSentence(nmea_sentence.message_id));
                     }
                 }
             }
@@ -598,7 +598,7 @@ pub fn parse_str(sentence_input: &str) -> Result<ParseResult, Error<'_>> {
                     if #[cfg(feature = "VPW")] {
                         parse_vpw(nmea_sentence).map(Into::into)
                     } else {
-                        return Err(Error::DisabledSentence);
+                        return Err(Error::DisabledSentence(nmea_sentence.message_id));
                     }
                 }
             }
@@ -607,7 +607,7 @@ pub fn parse_str(sentence_input: &str) -> Result<ParseResult, Error<'_>> {
                     if #[cfg(feature = "VTG")] {
                         parse_vtg(nmea_sentence).map(ParseResult::VTG)
                     } else {
-                        return Err(Error::DisabledSentence);
+                        return Err(Error::DisabledSentence(nmea_sentence.message_id));
                     }
                 }
             }
@@ -616,7 +616,7 @@ pub fn parse_str(sentence_input: &str) -> Result<ParseResult, Error<'_>> {
                     if #[cfg(feature = "VWR")] {
                         parse_vwr(nmea_sentence).map(Into::into)
                     } else {
-                        return Err(Error::DisabledSentence);
+                        return Err(Error::DisabledSentence(nmea_sentence.message_id));
                     }
                 }
             }
@@ -625,7 +625,7 @@ pub fn parse_str(sentence_input: &str) -> Result<ParseResult, Error<'_>> {
                     if #[cfg(feature = "VWT")] {
                         parse_vwt(nmea_sentence).map(Into::into)
                     } else {
-                        return Err(Error::DisabledSentence);
+                        return Err(Error::DisabledSentence(nmea_sentence.message_id));
                     }
                 }
             }
@@ -634,7 +634,7 @@ pub fn parse_str(sentence_input: &str) -> Result<ParseResult, Error<'_>> {
                     if #[cfg(feature = "WNC")] {
                         parse_wnc(nmea_sentence).map(ParseResult::WNC)
                     } else {
-                        return Err(Error::DisabledSentence);
+                        return Err(Error::DisabledSentence(nmea_sentence.message_id));
                     }
                 }
             }
@@ -643,7 +643,7 @@ pub fn parse_str(sentence_input: &str) -> Result<ParseResult, Error<'_>> {
                     if #[cfg(feature = "ZDA")] {
                         parse_zda(nmea_sentence).map(ParseResult::ZDA)
                     } else {
-                        return Err(Error::DisabledSentence);
+                        return Err(Error::DisabledSentence(nmea_sentence.message_id));
                     }
                 }
             }
@@ -652,7 +652,7 @@ pub fn parse_str(sentence_input: &str) -> Result<ParseResult, Error<'_>> {
                     if #[cfg(feature = "ZFO")] {
                         parse_zfo(nmea_sentence).map(ParseResult::ZFO)
                     } else {
-                        return Err(Error::DisabledSentence);
+                        return Err(Error::DisabledSentence(nmea_sentence.message_id));
                     }
                 }
             }
@@ -661,7 +661,7 @@ pub fn parse_str(sentence_input: &str) -> Result<ParseResult, Error<'_>> {
                     if #[cfg(feature = "ZTG")] {
                         parse_ztg(nmea_sentence).map(ParseResult::ZTG)
                     } else {
-                        return Err(Error::DisabledSentence);
+                        return Err(Error::DisabledSentence(nmea_sentence.message_id));
                     }
                 }
             }
@@ -670,7 +670,7 @@ pub fn parse_str(sentence_input: &str) -> Result<ParseResult, Error<'_>> {
                     if #[cfg(feature = "DPT")] {
                         parse_dpt(nmea_sentence).map(ParseResult::DPT)
                     } else {
-                        return Err(Error::DisabledSentence);
+                        return Err(Error::DisabledSentence(nmea_sentence.message_id));
                     }
                 }
             }
@@ -679,7 +679,7 @@ pub fn parse_str(sentence_input: &str) -> Result<ParseResult, Error<'_>> {
                     if #[cfg(feature = "DSC")] {
                         parse_dsc(nmea_sentence).map(Into::into)
                     } else {
-                        return Err(Error::DisabledSentence);
+                        return Err(Error::DisabledSentence(nmea_sentence.message_id));
                     }
                 }
             }
@@ -688,7 +688,7 @@ pub fn parse_str(sentence_input: &str) -> Result<ParseResult, Error<'_>> {
                     if #[cfg(feature = "XDR")] {
                         parse_xdr(nmea_sentence).map(Into::into)
                     } else {
-                        return Err(Error::DisabledSentence);
+                        return Err(Error::DisabledSentence(nmea_sentence.message_id));
                     }
                 }
             }
@@ -697,7 +697,7 @@ pub fn parse_str(sentence_input: &str) -> Result<ParseResult, Error<'_>> {
                     if #[cfg(feature = "XTE")] {
                         parse_xte(nmea_sentence).map(Into::into)
                     } else {
-                        return Err(Error::DisabledSentence);
+                        return Err(Error::DisabledSentence(nmea_sentence.message_id));
                     }
                 }
             }

@@ -37,6 +37,8 @@ pub struct GnsData {
     pub hdop: Option<f32>,
     pub alt: Option<f32>,
     pub geoid_separation: Option<f32>,
+    pub age_of_differential: Option<f32>,
+    pub station_id: Option<u16>,
     pub nav_status: Option<NavigationStatus>,
 }
 
@@ -117,9 +119,14 @@ fn do_parse_gns(i: &str) -> IResult<&str, GnsData> {
     let (i, _) = char(',').parse(i)?;
     let (i, geoid_separation) = opt(float).parse(i)?;
     let (i, _) = char(',').parse(i)?;
-    let (i, _age_of_diff) = take_until(",").parse(i)?; // TODO parse age of diff. corr.
+    let (i, age_of_differential) = opt(float).parse(i)?;
     let (i, _) = char(',').parse(i)?;
-    let (i, _station_id) = take_while(|c| c != ',').parse(i)?;
+    let (i, station_id_str) = take_while(|c: char| c != ',').parse(i)?;
+    let station_id: Option<u16> = if station_id_str.is_empty() {
+        None
+    } else {
+        station_id_str.parse().ok()
+    };
     let (i, nav_status) = opt(preceded(char(','), one_of("SCUV"))).parse(i)?;
     let nav_status = nav_status.map(|ch| match ch {
         'S' => NavigationStatus::Safe,
@@ -139,6 +146,8 @@ fn do_parse_gns(i: &str) -> IResult<&str, GnsData> {
             hdop,
             alt,
             geoid_separation,
+            age_of_differential,
+            station_id,
             nav_status,
         },
     ))
@@ -181,9 +190,12 @@ impl crate::generate::GenerateNmeaBody for GnsData {
         write_field(f, &self.alt)?;
         // 10: geoid separation
         write_field(f, &self.geoid_separation)?;
-        // 11: age of differential corrections (empty)
-        f.write_str(",")?;
-        // 12: differential reference station ID (empty)
+        // 11: age of differential corrections
+        write_field(f, &self.age_of_differential)?;
+        // 12: differential reference station ID
+        if let Some(sid) = self.station_id {
+            write!(f, "{:04}", sid)?;
+        }
         if let Some(ns) = self.nav_status {
             // 13: nav status (preceded by comma)
             write!(f, ",{}", ns.to_nmea_char())?;
@@ -215,6 +227,8 @@ mod tests {
         assert_relative_eq!(0.6, gns_data.hdop.unwrap());
         assert_relative_eq!(406.110, gns_data.alt.unwrap());
         assert_relative_eq!(-26.294, gns_data.geoid_separation.unwrap());
+        assert_relative_eq!(6.0, gns_data.age_of_differential.unwrap());
+        assert_eq!(Some(138), gns_data.station_id);
         assert_eq!(Some(NavigationStatus::Safe), gns_data.nav_status);
     }
 
@@ -237,6 +251,8 @@ mod tests {
         assert_relative_eq!(parsed.hdop.unwrap(), original.hdop.unwrap());
         assert_relative_eq!(parsed.alt.unwrap(), original.alt.unwrap());
         assert_relative_eq!(parsed.geoid_separation.unwrap(), original.geoid_separation.unwrap());
+        assert_relative_eq!(parsed.age_of_differential.unwrap(), original.age_of_differential.unwrap());
+        assert_eq!(parsed.station_id, original.station_id);
         assert_eq!(parsed.nav_status, original.nav_status);
     }
 }

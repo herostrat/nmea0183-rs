@@ -155,6 +155,7 @@ pub fn parse_gsv(sentence: NmeaSentence<'_>) -> Result<GsvData, Error<'_>> {
     } else {
         let gnss_type = match sentence.talker_id {
             "GA" => GnssType::Galileo,
+            "GN" => GnssType::Combined,
             "GP" => GnssType::Gps,
             "GL" => GnssType::Glonass,
             "BD" | "GB" => GnssType::Beidou,
@@ -387,5 +388,28 @@ mod tests {
         assert_eq!(sat2.elevation, Some(1.0));
         assert_eq!(sat2.azimuth, Some(10.0));
         assert_eq!(sat2.snr, None);
+    }
+
+    #[test]
+    fn test_parse_gsv_combined_gn() {
+        use crate::parse::parse_nmea_sentence;
+
+        let s = parse_nmea_sentence(
+            "$GNGSV,3,1,10,01,49,196,41,03,71,278,32,06,02,323,27,11,21,196,39*6E",
+        )
+        .unwrap();
+        assert_eq!(s.checksum, s.calc_checksum());
+        let data = parse_gsv(s).unwrap();
+        assert_eq!(data.gnss_type, GnssType::Combined);
+        assert_eq!(data.number_of_sentences, 3);
+        assert_eq!(data.sentence_num, 1);
+        assert_eq!(data.sats_in_view, 10);
+        assert_eq!(data.sats_info.len(), 4);
+        // All satellites should have Combined gnss_type
+        for sat in &data.sats_info {
+            if let Some(s) = sat {
+                assert_eq!(s.gnss_type, GnssType::Combined);
+            }
+        }
     }
 }

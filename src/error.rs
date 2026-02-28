@@ -38,9 +38,8 @@ pub enum Error<'a> {
     EmptyNavConfig,
     /// An unknown talker ID was found in the NMEA message.
     UnknownTalkerId { expected: &'a str, found: &'a str },
-    /// The current sentences is parsable but the feature has been disabled.
-    // TODO: Add sentences and data?!
-    DisabledSentence,
+    /// The current sentence is parsable but the feature has been disabled.
+    DisabledSentence(SentenceType),
 }
 
 impl<'a> From<nom::Err<nom::error::Error<&'a str>>> for Error<'a> {
@@ -101,8 +100,12 @@ impl fmt::Display for Error<'_> {
                 "Unknown Talker ID (expected = '{}', found = '{}')",
                 expected, found
             ),
-            Error::DisabledSentence => {
-                write!(f, "Sentence is parsable but it's feature is disabled",)
+            Error::DisabledSentence(sentence) => {
+                write!(
+                    f,
+                    "Sentence '{}' is parsable but its feature is disabled",
+                    sentence
+                )
             }
         }
     }

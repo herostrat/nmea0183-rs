@@ -31,6 +31,8 @@ define_enum_with_count!(
     enum GnssType {
         /// BeiDou Navigation Satellite System (BDS) from China.
         Beidou,
+        /// Combined multi-GNSS (talker ID "GN").
+        Combined,
         /// European Global Navigation System (Galileo) from Europe.
         Galileo,
         /// Global Positioning System (GPS) from the United States.
@@ -49,6 +51,7 @@ impl GnssType {
     pub fn to_talker_id(&self) -> &'static str {
         match *self {
             GnssType::Beidou => "BD",
+            GnssType::Combined => "GN",
             GnssType::Galileo => "GA",
             GnssType::Gps => "GP",
             GnssType::Glonass => "GL",
@@ -62,6 +65,7 @@ impl fmt::Display for GnssType {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
             GnssType::Beidou => write!(f, "Beidou"),
+            GnssType::Combined => write!(f, "Combined"),
             GnssType::Galileo => write!(f, "Galileo"),
             GnssType::Gps => write!(f, "GPS"),
             GnssType::Glonass => write!(f, "GLONASS"),
