@@ -106,7 +106,7 @@ ais = ["VDM"]
 ## Current
 current = ["VDR"]
 ## Vendor-specific messages
-vendor-specific = ["RMZ", "STALK"]
+vendor-specific = ["RMZ", "STALK", "GGAE", "RMCE"]
 ## Other
 other = ["HDT", "MDA", "MWV", "TXT", "ZDA"]
 
@@ -168,6 +168,10 @@ GBS = []
 ## (feature: `GNSS`)
 GGA = []
 
+## u-blox Enhanced GGA (higher precision coordinates)
+## (feature: `vendor-specific`)
+GGAE = []
+
 ## * Geographic Position - Latitude/Longitude
 ## (feature: `GNSS`)
 GLL = []
@@ -227,6 +231,10 @@ RMB = []
 ## * Recommended Minimum Navigation Information
 ## (feature: `GNSS`)
 RMC = []
+
+## u-blox Enhanced RMC (higher precision coordinates)
+## (feature: `vendor-specific`)
+RMCE = []
 
 ## PGRMZ - Garmin Altitude (Vendor specific)
 ## (feature: `vendor-specific`)

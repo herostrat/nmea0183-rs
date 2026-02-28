@@ -8,7 +8,7 @@
 
 ## NMEA 0183 sentence parser and generator
 
-Supports parsing and generating 50 sentence types across GNSS, navigation, water/depth, wind, heading, equipment, radar, sensor/transducer, safety/DSC and AIS categories.
+Supports parsing and generating 52 sentence types across GNSS, navigation, water/depth, wind, heading, equipment, radar, sensor/transducer, safety/DSC, AIS and vendor-specific categories.
 
 Supported sentences (alphabetically ordered):
 
@@ -26,6 +26,7 @@ Supported sentences (alphabetically ordered):
 - `DSC` - Digital Selective Calling (feature: `safety`)
 - `GBS` - GPS Satellite Fault Detection (feature: `GNSS`)
 - `GGA` - * Global Positioning System Fix Data (feature: `GNSS`)
+- `GGAE` - u-blox Enhanced GGA (feature: `vendor-specific`)
 - `GLL` - * Geographic Position - Latitude/Longitude (feature: `GNSS`)
 - `GNS` - * Fix data (feature: `GNSS`)
 - `GSA` - * GPS DOP and active satellites (feature: `GNSS`)
@@ -41,6 +42,7 @@ Supported sentences (alphabetically ordered):
 - `MWV` - Wind Speed and Angle (feature: `other`)
 - `RMB` - Recommended Minimum Navigation Information (feature: `navigation`)
 - `RMC` - * Recommended Minimum Navigation Information (feature: `GNSS`)
+- `RMCE` - u-blox Enhanced RMC (feature: `vendor-specific`)
 - `RMZ` - PGRMZ - Garmin Altitude (feature: `vendor-specific`)
 - `ROT` - Rate Of Turn (feature: `heading`)
 - `RPM` - Revolutions (feature: `equipment`)

@@ -109,6 +109,18 @@ pub fn parse_gga(sentence: NmeaSentence<'_>) -> Result<GgaData, Error<'_>> {
     }
 }
 
+/// Parse u-blox enhanced GGAE sentence (same fields as GGA, higher precision).
+pub fn parse_ggae(sentence: NmeaSentence<'_>) -> Result<GgaData, Error<'_>> {
+    if sentence.message_id != SentenceType::GGAE {
+        Err(Error::WrongSentenceHeader {
+            expected: SentenceType::GGAE,
+            found: sentence.message_id,
+        })
+    } else {
+        Ok(do_parse_gga(sentence.data)?.1)
+    }
+}
+
 impl crate::generate::GenerateNmeaBody for GgaData {
     fn sentence_type(&self) -> SentenceType {
         SentenceType::GGA

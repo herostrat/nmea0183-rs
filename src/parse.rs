@@ -70,6 +70,12 @@ fn parse_checksum(i: &str) -> IResult<&str, u8> {
 }
 
 fn parse_sentence_type(i: &str) -> IResult<&str, SentenceType> {
+    // Try 4-character sentence types first (e.g. RMCE, GGAE), then fall back to 3
+    if i.len() >= 4 {
+        if let Ok(st) = SentenceType::try_from(&i[..4]) {
+            return Ok((&i[4..], st));
+        }
+    }
     map_res(take(3usize), |sentence_type: &str| {
         SentenceType::try_from(sentence_type).map_err(|_| "Unknown sentence type")
     })
@@ -121,6 +127,8 @@ pub enum ParseResult {
     DSC(DscData),
     GBS(GbsData),
     GGA(GgaData),
+    /// u-blox enhanced GGA (same data, higher precision coordinates)
+    GGAE(GgaData),
     GLL(GllData),
     GNS(GnsData),
     GSA(GsaData),
@@ -136,6 +144,8 @@ pub enum ParseResult {
     MWV(MwvData),
     RMB(RmbData),
     RMC(RmcData),
+    /// u-blox enhanced RMC (same data, higher precision coordinates)
+    RMCE(RmcData),
     ROT(RotData),
     RPM(RpmData),
     RSA(RsaData),
@@ -177,6 +187,7 @@ impl From<&ParseResult> for SentenceType {
             ParseResult::DBT(_) => SentenceType::DBT,
             ParseResult::GBS(_) => SentenceType::GBS,
             ParseResult::GGA(_) => SentenceType::GGA,
+            ParseResult::GGAE(_) => SentenceType::GGAE,
             ParseResult::GLL(_) => SentenceType::GLL,
             ParseResult::GNS(_) => SentenceType::GNS,
             ParseResult::GSA(_) => SentenceType::GSA,
@@ -192,6 +203,7 @@ impl From<&ParseResult> for SentenceType {
             ParseResult::MWV(_) => SentenceType::MWV,
             ParseResult::RMB(_) => SentenceType::RMB,
             ParseResult::RMC(_) => SentenceType::RMC,
+            ParseResult::RMCE(_) => SentenceType::RMCE,
             ParseResult::ROT(_) => SentenceType::ROT,
             ParseResult::RPM(_) => SentenceType::RPM,
             ParseResult::RSA(_) => SentenceType::RSA,
@@ -359,6 +371,15 @@ pub fn parse_str(sentence_input: &str) -> Result<ParseResult, Error<'_>> {
                     }
                 }
             }
+            SentenceType::GGAE => {
+                cfg_if! {
+                    if #[cfg(feature = "GGAE")] {
+                        parse_ggae(nmea_sentence).map(ParseResult::GGAE)
+                    } else {
+                        return Err(Error::DisabledSentence(nmea_sentence.message_id));
+                    }
+                }
+            }
             SentenceType::GLL => {
                 cfg_if! {
                     if #[cfg(feature = "GLL")] {
@@ -489,6 +510,15 @@ pub fn parse_str(sentence_input: &str) -> Result<ParseResult, Error<'_>> {
                 cfg_if! {
                     if #[cfg(feature = "RMC")] {
                         parse_rmc(nmea_sentence).map(ParseResult::RMC)
+                    } else {
+                        return Err(Error::DisabledSentence(nmea_sentence.message_id));
+                    }
+                }
+            }
+            SentenceType::RMCE => {
+                cfg_if! {
+                    if #[cfg(feature = "RMCE")] {
+                        parse_rmce(nmea_sentence).map(ParseResult::RMCE)
                     } else {
                         return Err(Error::DisabledSentence(nmea_sentence.message_id));
                     }

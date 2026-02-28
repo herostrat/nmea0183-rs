@@ -23,6 +23,8 @@ fn test_all_supported_messages() {
         (SentenceType::GBS, "$GPGBS,182141.000,15.5,15.3,7.2,21,0.9,0.5,0.8*54"),
         // GGA
         (SentenceType::GGA, "$GPGGA,133605.0,5521.75946,N,03731.93769,E,0,00,,,M,,M,,*4F"),
+        // GGAE (u-blox enhanced)
+        (SentenceType::GGAE, "$GPGGAE,133605.0,5521.75946,N,03731.93769,E,0,00,,,M,,M,,*0A"),
         // GLL
         (SentenceType::GLL, "$GPGLL,5107.0013414,N,11402.3279144,W,205412.00,A,A*73"),
         // GNS
@@ -45,6 +47,8 @@ fn test_all_supported_messages() {
         (SentenceType::RMB, "$ECRMB,A,0.000,L,001,002,4653.550,N,07115.984,W,2.505,334.205,0.000,V*04"),
         // RMC
         (SentenceType::RMC, "$GPRMC,225446.33,A,4916.45,N,12311.12,W,000.5,054.7,191194,020.3,E,A*2B"),
+        // RMCE (u-blox enhanced)
+        (SentenceType::RMCE, "$GPRMCE,225446.33,A,4916.45,N,12311.12,W,000.5,054.7,191194,020.3,E,A*6E"),
         // RMZ
         (SentenceType::RMZ, "$PGRMZ,2282,f,3*21"),
         // TTM

@@ -202,6 +202,18 @@ pub fn parse_rmc(sentence: NmeaSentence<'_>) -> Result<RmcData, Error<'_>> {
     }
 }
 
+/// Parse u-blox enhanced RMCE sentence (same fields as RMC, higher precision).
+pub fn parse_rmce(sentence: NmeaSentence<'_>) -> Result<RmcData, Error<'_>> {
+    if sentence.message_id != SentenceType::RMCE {
+        Err(Error::WrongSentenceHeader {
+            expected: SentenceType::RMCE,
+            found: sentence.message_id,
+        })
+    } else {
+        Ok(do_parse_rmc(sentence.data)?.1)
+    }
+}
+
 impl RmcStatusOfFix {
     fn to_nmea_char(self) -> char {
         match self {
